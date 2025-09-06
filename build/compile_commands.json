@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/fernando/Repos/orchestrator/build",
+  "command": "/usr/bin/c++   -g -o CMakeFiles/Orchestrator.dir/src/main.cpp.o -c /home/fernando/Repos/orchestrator/src/main.cpp",
+  "file": "/home/fernando/Repos/orchestrator/src/main.cpp",
+  "output": "CMakeFiles/Orchestrator.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/fernando/Repos/orchestrator/build",
+  "command": "/usr/bin/c++   -g -o CMakeFiles/Orchestrator.dir/src/Orchestrator.cpp.o -c /home/fernando/Repos/orchestrator/src/Orchestrator.cpp",
+  "file": "/home/fernando/Repos/orchestrator/src/Orchestrator.cpp",
+  "output": "CMakeFiles/Orchestrator.dir/src/Orchestrator.cpp.o"
+}
+]

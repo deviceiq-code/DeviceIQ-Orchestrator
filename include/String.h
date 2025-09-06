@@ -1,0 +1,32 @@
+#ifndef String_h
+#define String_h
+
+#include <cstdint>
+#include <iostream>
+#include <unistd.h>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <cctype>
+
+class String : public std::string {
+    public:
+        String() : std::string() {}
+        String(uint16_t n) : std::string(std::to_string(n)) {}
+        String(std::string str) : std::string(str) {}
+        String(std::string str, size_t sz);
+        String(const char* str, size_t sz);
+
+        inline bool Equals(const char* str) { return *this == String(str); }
+        inline bool Equals(const String str) { return *this == str; }
+        std::string LimitString(size_t sz, bool fill = false);
+        std::string LowerCase();
+        std::string UpperCase();
+        std::string TrimLeft();
+        std::string TrimRight();
+        std::string Trim();
+        std::vector<std::string> Tokenize(const char separator);
+};
+
+#endif
