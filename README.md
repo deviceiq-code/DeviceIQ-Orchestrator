@@ -1,6 +1,6 @@
-# C++ VS Code Template (Linux, vcpkg)
+# DeviceIQ Orchestrator
 
-Minimal starter project for C++ with VS Code + CMake + vcpkg manifest mode.
+Orchestrator is a tool to manage DeviceIQ devices remotely.
 
 ## Requirements
 - Linux with `gcc`/`g++`, `cmake`, `gdb`
@@ -12,17 +12,6 @@ Minimal starter project for C++ with VS Code + CMake + vcpkg manifest mode.
 # Configure and build
 cmake --preset=debug
 cmake --build --preset=debug
-
-# Run
-./build/bin/hello
-```
-
-Output should be a JSON message:
-```json
-{
-    "msg": "Hello, World! 👋 from C++ with vcpkg (nlohmann-json)"
-}
-```
 
 ## Notes
 - Dependencies are declared in `vcpkg.json`.
