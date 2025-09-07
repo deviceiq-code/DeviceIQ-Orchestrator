@@ -5,21 +5,26 @@
 #include <cstring>
 #include <algorithm>
 #include <arpa/inet.h>
+#include <nlohmann/json.hpp>
 
 #include "../include/String.h"
 #include "../include/Version.h"
+#include "../include/Log.h"
 #include "../include/Orchestrator.h"
-#include "../include/Json.h"
 #include "../include/CommandLineParser.h"
 
 using namespace std;
 using json = nlohmann::json;
 
-std::string TargetDevice = DEF_BROADCASTADDRESS;
-std::string TargetMAC = "D8:13:2A:7E:EE:C4";
-std::string ConfigFilename = DEF_CONFIGFILENAME;
-uint16_t ListenTimeout = DEF_LISTENTIMEOUT;
-uint16_t Port = DEF_PORT;
+using namespace Orchestrator_Log;
+
+Orchestrator *ServerOrchestrator;
+Orchestrator_Log::Log *ServerLog;
+
+string TargetInterface;
+
+string TargetDevice = DEF_BROADCASTADDRESS;
+string TargetMAC = "D8:13:2A:7E:EE:C4";
 bool Force = DEF_FORCE;
 bool Apply = DEF_APPLY;
 
@@ -28,6 +33,9 @@ DiscoveryMode Mode = DISCOVERY_NONE;
 
 int main(int argc, char** argv) {
     CommandLineParser clp;
+
+    ServerOrchestrator = new Orchestrator();
+    ServerLog = new Log(DEF_LOGFILE, ENDPOINT_CONSOLE);
 
     // Actions 
 
@@ -57,19 +65,9 @@ int main(int argc, char** argv) {
         if (String(TargetDevice).Equals("unmanaged")) { Mode = DISCOVERY_UNMANAGED; };
     });
 
-    clp.OnParameter('p', "port", required_argument, [](char* p_arg) {
+    clp.OnParameter('c', "config", required_argument, [&](char* p_arg) {
         if (p_arg[0] == '=') p_arg = ++p_arg;
-        Port = clamp(atoi(p_arg), 0, 65535);
-    });
-
-    clp.OnParameter('w', "wait", required_argument, [](char* p_arg) {
-        if (p_arg[0] == '=') p_arg = ++p_arg;
-        ListenTimeout = clamp(atoi(p_arg), 5, 65535);
-    });
-
-    clp.OnParameter('c', "config", required_argument, [](char* p_arg) {
-        if (p_arg[0] == '=') p_arg = ++p_arg;
-        ConfigFilename = p_arg;
+        ServerOrchestrator->ConfigFile(p_arg);
     });
 
     clp.OnParameter('f', "force", no_argument, [](char* p_arg) {
@@ -80,24 +78,43 @@ int main(int argc, char** argv) {
         Apply = true;
     });
 
+    clp.OnParameter('i', "interface", required_argument, [&](char* p_arg) {
+        if (p_arg[0] == '=') p_arg = ++p_arg;
+        TargetInterface = p_arg;
+    });
+
     clp.Parse(argc, argv);
 
-    Orchestrator orchestrator;
+    if (ServerOrchestrator->ReadConfiguration()) {
+        if (!JSON<bool>(ServerOrchestrator->Configuration["Configuration"]["Log File Append"])) std::remove("./orchestrator.log");
+        ServerLog->Endpoint(JSON<string>(ServerOrchestrator->Configuration["Configuration"]["Log Endpoint"]));
+        ServerLog->SyslogServer(JSON<string>(ServerOrchestrator->Configuration["Configuration"]["Syslog URL"]), JSON<uint16_t>(ServerOrchestrator->Configuration["Configuration"]["Syslog Port"]));
 
-    if (orchestrator.ReadConfiguration(ConfigFilename.c_str()) == true) {
-        fprintf(stdout, "Configuration file: %s\r\n", ConfigFilename.c_str());
-        fprintf(stdout, "Server Name: %s\r\n", orchestrator.ServerName().c_str());
-        fprintf(stdout, "Server ID: %s\r\n", orchestrator.ServerID().c_str());
+        ServerLog->Write("Configuration file: " + ServerOrchestrator->ConfigFile(), LOGLEVEL_INFO);
+        ServerLog->Write("Server name: " + ServerOrchestrator->Configuration["Configuration"]["Server Name"].get<string>(), LOGLEVEL_INFO);
+        ServerLog->Write("Server ID: " + ServerOrchestrator->Configuration["Configuration"]["Server ID"].get<string>(), LOGLEVEL_INFO);
+
+        if (!TargetInterface.empty()) {
+            ServerOrchestrator->Configuration["Configuration"]["Bind"] = TargetInterface;
+        }
+
+        if (ServerOrchestrator->Initialize()) {
+            ServerLog->Write("Service bind to " + ServerOrchestrator->Configuration["Configuration"]["Bind"].get<string>(), LOGLEVEL_INFO);
+        } else {
+            ServerLog->Write("Service unable to bind to " + ServerOrchestrator->Configuration["Configuration"]["Bind"].get<string>(), LOGLEVEL_ERROR);
+            exit(1);
+        }
     } else {
-        fprintf(stderr, "Configuration file: %s [Invalid]\r\n", ConfigFilename.c_str());
+        ServerLog->Write("Configuration file " + ServerOrchestrator->ConfigFile() + " is invalid", LOGLEVEL_ERROR);
+        exit(1);
     }
 
     switch (Action) {
         case ACTION_LIST : {
-            orchestrator.List();
+            ServerOrchestrator->List();
         } break;
         case ACTION_DISCOVERY : {
-            orchestrator.Discovery(Mode, ListenTimeout, TargetDevice.c_str());
+            ServerOrchestrator->Discovery(Mode, 15, TargetDevice.c_str());
         } break;
         case ACTION_ADD : {
             if (TargetDevice.find("255") != string::npos) {
@@ -105,7 +122,7 @@ int main(int argc, char** argv) {
                 exit(1);
             }
 
-            OperationResult r = orchestrator.Add(TargetDevice.c_str(), ListenTimeout, Force);
+            OperationResult r = ServerOrchestrator->Add(TargetDevice.c_str(), 15, Force);
             switch (r) {
                 case ADD_SUCCESS : {
                     fprintf(stdout, "Success adding device %s.\r\n\r\n", TargetDevice.c_str());
@@ -124,7 +141,7 @@ int main(int argc, char** argv) {
                 exit(1);
             }
 
-            OperationResult r = orchestrator.Remove(TargetDevice, ListenTimeout, Force);
+            OperationResult r = ServerOrchestrator->Remove(TargetDevice, 15, Force);
             switch (r) {
                 case REMOVE_SUCCESS : {
                     fprintf(stdout, "Success removing device %s.\r\n\r\n", TargetMAC.c_str());
@@ -138,23 +155,23 @@ int main(int argc, char** argv) {
             }
         } break;
         case ACTION_UPDATE : {
-            bool r = orchestrator.Update(TargetDevice.c_str());
+            bool r = ServerOrchestrator->Update(TargetDevice.c_str());
             fprintf(stdout, "update command sent.\r\n\r\n");
         } break;
         case ACTION_RESTART : {
-            bool r = orchestrator.Restart(TargetDevice.c_str());
-            fprintf(stdout, "Finish restarting.\r\n\r\n");
+            bool r = ServerOrchestrator->Restart(TargetDevice.c_str());
+            fprintf(stdout, "Finish restarting. %u\r\n\r\n", r);
         } break;
         case ACTION_REFRESH : {
-            OperationResult r = orchestrator.Refresh(TargetDevice.c_str(), ListenTimeout);
+            OperationResult r = ServerOrchestrator->Refresh(TargetDevice.c_str(), 15);
             fprintf(stdout, "Finish refreshing.\r\n\r\n");
         } break;
         case ACTION_PULL : {
-            OperationResult r = orchestrator.Pull(TargetDevice.c_str(), ListenTimeout);
+            OperationResult r = ServerOrchestrator->Pull(TargetDevice.c_str(), 15);
             fprintf(stdout, "Finish config pulling.\r\n\r\n");
         } break;
         case ACTION_PUSH : {
-            OperationResult r = orchestrator.Push(TargetDevice.c_str(), ListenTimeout, Apply);
+            OperationResult r = ServerOrchestrator->Push(TargetDevice.c_str(), 15, Apply);
             fprintf(stdout, "Finish config pushing.\r\n\r\n");
         } break;
         default: {

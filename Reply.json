@@ -1,5 +1,0 @@
-{
-    "Provider": "Orchestrator",
-    "Request": "Discover",
-    "ReplyOnPort": 30030
-}

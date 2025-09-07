@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Configure (CMake)",
+      "type": "shell",
+      "command": "cmake --preset=debug",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build (CMake)",
+      "type": "shell",
+      "command": "cmake --build --preset=debug",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Run",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/bin/orchestrator",
+      "dependsOn": [
+        "Build (CMake)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean",
+      "type": "shell",
+      "command": "rm -rf build",
+      "problemMatcher": []
+    }
+  ]
+}

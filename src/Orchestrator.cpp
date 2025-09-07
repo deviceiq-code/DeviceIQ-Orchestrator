@@ -1,5 +1,9 @@
 #include "../include/Orchestrator.h"
 
+void Orchestrator::init() {
+
+}
+
 std::string Orchestrator::generateRandomID() {
     std::string result;
 
@@ -39,12 +43,25 @@ std::string Orchestrator::queryMACAddress(const char* ip_address) {
     return "MAC Not Found";
 }
 
+void Orchestrator::applyBindForUdpSocket(int sockfd) {
+    if (mBindAddr.s_addr == 0) return;
+    (void)setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, Configuration["Configuration"]["Bind"].get<string>().c_str(), (socklen_t)Configuration["Configuration"]["Bind"].get<string>().size());
+
+    sockaddr_in local{};
+    local.sin_family = AF_INET;
+    local.sin_port = htons(0);
+    local.sin_addr = mBindAddr;
+    (void)bind(sockfd, (sockaddr*)&local, sizeof(local));
+}
+
 bool Orchestrator::sendMessage(const std::string& message, const uint16_t port, const char* dest_address) {
     int sockfd, broadcast = 1;
     struct sockaddr_in broadcast_addr;
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) return false;
+
+    applyBindForUdpSocket(sockfd);
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0) { close(sockfd); return false; }
 
@@ -198,7 +215,7 @@ void Orchestrator::List() {
                     String(device_info.value("Hostname", "Unknown")).LimitString(20, true).c_str(),
                     String(device_id).LimitString(17, true).c_str(),
                     String(device_info.value("IP Address", "Unknown")).LimitString(15, true).c_str(),
-                    String(formatEpochTime(device_info.value("Last Update", 0))).LimitString(19, true).c_str()
+                    String(device_info.value("Last Update", 0)).LimitString(19, true).c_str()
                 );
             }
 
@@ -211,13 +228,15 @@ void Orchestrator::List() {
 }
 
 void Orchestrator::Discovery(const DiscoveryMode mode, const uint16_t listen_timeout, const char* dest_address) {
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();       
+    if (mBindAddr.s_addr == 0) return; //no Bind
+
+    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
     uint16_t mDiscoveredDevices = 0;
 
     json JsonReply = {
         {"Provider", "Orchestrator"},
         {"Request", "Discover"},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Calling", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
         {"Reply Port", port}
     };
@@ -316,7 +335,7 @@ OperationResult Orchestrator::Add(std::string target, const uint16_t listen_time
         {"Provider", "Orchestrator"},
         {"Request", "Discover"},
         {"Calling", "All"},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Reply Port", port}
     };
 
@@ -342,7 +361,7 @@ OperationResult Orchestrator::Add(std::string target, const uint16_t listen_time
                     json addRequest = {
                         {"Provider", "Orchestrator"},
                         {"Request", "Add"},
-                        {"Server ID", mServerID},
+                        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
                         {"MAC Address", resolved_mac},
                         {"Reply Port", port}
                     };
@@ -369,7 +388,7 @@ OperationResult Orchestrator::Add(std::string target, const uint16_t listen_time
                         {"Hostname", dev.value("Hostname", "")},
                         {"MAC Address", resolved_mac},
                         {"IP Address", resolved_ip},
-                        {"Last Update", getCurrentEpochTime()}
+                        {"Last Update", CurrentDateTime()}
                     };
 
                     result = SaveConfiguration() ? ADD_SUCCESS : ADD_FAIL;
@@ -407,7 +426,7 @@ OperationResult Orchestrator::Remove(std::string target, const uint16_t listen_t
     json request = {
         {"Provider", "Orchestrator"},
         {"Request", "Remove"},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"MAC Address", mac_address},
         {"Reply Port", port}
     };
@@ -467,7 +486,7 @@ OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_
         json discoveryRequest = {
             {"Provider", "Orchestrator"},
             {"Request", "Discover"},
-            {"Server ID", mServerID},
+            {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
             {"Calling", "All"},
             {"Reply Port", port}
         };
@@ -512,7 +531,7 @@ OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_
                     {"Hostname", dev.value("Hostname", "")},
                     {"MAC Address", dev.value("MAC Address", "")},
                     {"IP Address", dev.value("IP Address", "")},
-                    {"Last Update", getCurrentEpochTime()}
+                    {"Last Update", CurrentDateTime()}
                 };
 
                 updatedCount++;
@@ -549,7 +568,7 @@ OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_
     json discoveryRequest = {
         {"Provider", "Orchestrator"},
         {"Request", "Discover"},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Calling", "All"},
         {"Reply Port", port}
     };
@@ -602,7 +621,7 @@ OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_
             {"Hostname", matchedDevice.value("Hostname", "")},
             {"MAC Address", matchedDevice.value("MAC Address", "")},
             {"IP Address", matchedDevice.value("IP Address", "")},
-            {"Last Update", getCurrentEpochTime()}
+            {"Last Update", CurrentDateTime()}
         };
 
         result = SaveConfiguration() ? REFRESH_SUCCESS : REFRESH_FAIL;
@@ -634,7 +653,7 @@ OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_tim
         {"Provider", "Orchestrator"},
         {"Request", "Pull"},
         {"MAC Address", mac},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Calling", "All"},
         {"Reply Port", port}
     };
@@ -779,7 +798,7 @@ OperationResult Orchestrator::Push(std::string target, const uint16_t listen_tim
         {"Request", "Push"},
         {"Apply", apply},
         {"MAC Address", mac},
-        {"Server ID", mServerID},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Calling", "All"},
         {"Reply Port", port}
     };
@@ -819,7 +838,7 @@ bool Orchestrator::Update(std::string target) {
         
                 JsonReply["Provider"] = "Orchestrator";
                 JsonReply["Request"] = "Update";
-                JsonReply["Server ID"] = mServerID;
+                JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
                 JsonReply["MAC Address"] = mac_address;
 
                 if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
@@ -865,7 +884,7 @@ bool Orchestrator::Restart(std::string target) {
         
                 JsonReply["Provider"] = "Orchestrator";
                 JsonReply["Request"] = "Restart";
-                JsonReply["Server ID"] = mServerID;
+                JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
                 JsonReply["MAC Address"] = mac_address;
 
                 if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
@@ -885,39 +904,121 @@ bool Orchestrator::Restart(std::string target) {
     return false;
 }
 
-bool Orchestrator::ReadConfiguration(const char* filename) {
-    std::ifstream configFile(filename);
+bool Orchestrator::Initialize() {
+    bool ret = false;
+
+    if (Configuration.empty()) {
+        if (ReadConfiguration()) {
+            if (JSON<std::string>(Configuration["Configuration"]["Server Name"], "") == "") Configuration["Configuration"]["Server Name"] = DEF_SERVERNAME;
+            if (JSON<std::string>(Configuration["Configuration"]["Server ID"], "") == "") Configuration["Configuration"]["Server ID"] = generateRandomID();
+        }
+    }
+
+    // Bind
+    if (setBindInterface(JSON<std::string>(Configuration["Configuration"]["Bind"], ""))) {
+        ret = true;
+    } else {
+        ret = false;
+    }
+
+    return ret;
+}
+
+bool Orchestrator::ReadConfiguration() {
+    bool ret = false;
+
+    if (mConfigFile.empty()) {
+        char exePath[PATH_MAX];
+
+        ssize_t count = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+        if (count != -1) {
+            exePath[count] = '\0';
+            mConfigFile = "./" + Version.ProductName + ".json";
+        } else {
+            mConfigFile = DEF_CONFIGFILE;
+        }
+    }
+
+    std::ifstream configFile(mConfigFile);
 
     if (configFile.is_open() == true) {
         try {
             configFile >> Configuration;
-            CurrentConfigurationFile = filename;
-
-            if (safeGet<std::string>(Configuration["Configuration"]["Server Name"], "") == "") Configuration["Configuration"]["Server Name"] = DEF_SERVERNAME;
-            if (safeGet<std::string>(Configuration["Configuration"]["Server ID"], "") == "") Configuration["Configuration"]["Server ID"] = generateRandomID();
-
-            mServerName = Configuration["Configuration"]["Server Name"];
-            mServerID = Configuration["Configuration"]["Server ID"];
-
-            SaveConfiguration();
-
-            return true;
+            ret = true;
         } catch (nlohmann::json::parse_error& ex) {
-            fprintf(stderr, "Parse error at byte %ld:%s on file %s.\r\n\r\n", ex.byte, ex.what(), filename);
-            exit(1);
+            // ServerLog->Write("Parse error at byte " + to_string(ex.byte) + ":" + ex.what() + " on file " + mConfigFile, LOGLEVEL_ERROR);
+            ret = false;
+        }
+    } else {
+        Configuration["Configuration"] = {
+            {"Log Endpoint", "ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE"},
+            {"Log File Append", false},
+            {"Bind", ""},
+            {"Port", 30030},
+            {"Server ID", ""},
+            {"Server Name", ""},
+            {"Syslog Port", 514},
+            {"Syslog URL", ""}
+        };
+
+        Configuration["Managed Devices"] = {
+        };
+        
+        if (SaveConfiguration()) {
+            // ServerLog->Write("Configuration file not found - Default config file " + string(DEF_CONFIGFILE) + " created", LOGLEVEL_WARNING);
+            ret = true;
+        } else {
+            // ServerLog->Write("Configuration file not found - Unable to create default config file " + string(DEF_CONFIGFILE), LOGLEVEL_ERROR);
+            ret = false;
         }
     }
 
-    return false;
+    return ret;
 }
 
 bool Orchestrator::SaveConfiguration() {
-    std::ofstream outFile(CurrentConfigurationFile.c_str());
+    ofstream outFile(mConfigFile.c_str());
 
-    if (!outFile) return false;
+    if (!outFile.is_open()) return false;
 
     outFile << Configuration.dump(4);
     outFile.close();
 
+    return !outFile.fail();
+}
+
+bool Orchestrator::resolveInterfaceOrIp(const std::string& ifaceOrIp, in_addr& out) {
+    // Se for IP literal, aceita direto
+    in_addr tmp{};
+    if (inet_aton(ifaceOrIp.c_str(), &tmp)) { out = tmp; return true; }
+
+    // Caso contrário, tenta resolver o NOME da interface para um IPv4
+    ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) return false;
+
+    bool ok = false;
+    for (ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) continue;
+        if (ifa->ifa_addr->sa_family != AF_INET) continue;
+        if (ifaceOrIp != ifa->ifa_name) continue; // match exato do nome da iface
+        out = ((sockaddr_in*)ifa->ifa_addr)->sin_addr;
+        ok = true;
+        break;
+    }
+    freeifaddrs(ifaddr);
+    return ok;
+}
+
+bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
+    if (ifaceOrIp.empty()) {
+        mBindAddr = {};
+        return true;
+    }
+
+    in_addr addr{};
+    if (!resolveInterfaceOrIp(ifaceOrIp, addr)) return false;
+
+    mBindAddr = addr;
+    
     return true;
 }

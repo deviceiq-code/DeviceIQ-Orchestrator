@@ -1,0 +1,24 @@
+{
+    "Configuration": {
+        "Bind": "ens4",
+        "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
+        "Log File Append": false,
+        "Port": 30030,
+        "Server ID": "ZCZ95YJJ693UF78",
+        "Server Name": "Genesis",
+        "Syslog Port": 514,
+        "Syslog URL": ""
+    },
+    "Managed Devices": {
+	"D8:13:2A:7E:EE:C4": {
+            "Device Name": "DeviceIQ",
+            "Hardware Model": "ESP-32",
+            "Hostname": "DEVIQ-EEC4",
+            "IP Address": "192.168.1.107",
+            "Last Update": 1755293499,
+            "MAC Address": "D8:13:2A:7E:EE:C4",
+            "Product Name": "ESP32-Pro",
+            "Version": "1.0.0"
+        }
+    }
+}

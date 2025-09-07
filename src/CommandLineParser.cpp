@@ -37,19 +37,19 @@ void CommandLineParser::Parse(int argc, char** argv) {
 
     char optc = '\0';
     int idx = 0;
-    bool sucess = false;
+    bool getopt_long_sucess = false;
 
     while ((optc = getopt_long(argc, argv, shortopts.c_str(), mParameters.data(), &idx)) != -1) {
         for (size_t i = 0; i < mParameters.size(); ++i) {
             if (optc == mParameters[i].val) {
                 mParametersCallbacks[i](optarg);
-                sucess = true;
+                getopt_long_sucess = true;
                 break;
             }
         }
     }
 
-    if (sucess == false) {
+    if ((getopt_long_sucess == false) && (argc > 2)){
         fprintf(stdout, "Incorrect parameters.\r\n\r\n");
         exit(1);
     }
