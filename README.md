@@ -16,3 +16,14 @@ cmake --build --preset=debug
 ## Notes
 - Dependencies are declared in `vcpkg.json`.
 - vcpkg will fetch `nlohmann-json` automatically.
+
+## Contributing
+
+Contributions are welcome!  
+Feel free to open issues, submit pull requests, or suggest improvements.  
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
