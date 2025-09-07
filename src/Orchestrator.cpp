@@ -684,7 +684,7 @@ OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_tim
             fprintf(stdout, "\r\n%s OK\r\n\r\n", mac.c_str());
 
             mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
-            std::string filename = mac + ".config";
+            std::string filename = mac + ".json";
 
             // Save to file with indentation
             std::ofstream ofs(filename);
@@ -720,7 +720,7 @@ OperationResult Orchestrator::Push(std::string target, const uint16_t listen_tim
     // Load config file
     std::string config_filename = mac;
     config_filename.erase(std::remove(config_filename.begin(), config_filename.end(), ':'), config_filename.end());
-    config_filename += ".config";
+    config_filename += ".json";
 
     std::ifstream ifs(config_filename);
     if (!ifs.is_open()) {
