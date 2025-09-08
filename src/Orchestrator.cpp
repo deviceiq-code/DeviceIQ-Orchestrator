@@ -81,7 +81,10 @@ void Orchestrator::serverListen(uint16_t port, uint16_t listen_timeout, std::fun
     struct sockaddr_in address{};
     socklen_t addrlen = sizeof(address);
 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) { perror("[Listen] socket"); return; }
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        ServerLog->Write("[Listen] Socket", LOGLEVEL_ERROR);
+        return;
+    }
 
     int opt = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -90,8 +93,16 @@ void Orchestrator::serverListen(uint16_t port, uint16_t listen_timeout, std::fun
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
 
-    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) { perror("[Listen] bind"); close(server_fd); return; }
-    if (listen(server_fd, 1) < 0) { perror("[Listen] listen"); close(server_fd); return; }
+    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        ServerLog->Write("[Listen] Bind", LOGLEVEL_ERROR);
+        close(server_fd);
+        return;
+    }
+    if (listen(server_fd, 1) < 0) {
+        ServerLog->Write("[Listen] Listen", LOGLEVEL_ERROR);
+        close(server_fd);
+        return;
+    }
 
     fd_set readfds;
     FD_ZERO(&readfds);
@@ -100,13 +111,20 @@ void Orchestrator::serverListen(uint16_t port, uint16_t listen_timeout, std::fun
     struct timeval timeout = {listen_timeout, 0};
     int activity = select(server_fd + 1, &readfds, nullptr, nullptr, &timeout);
 
-    if (activity <= 0) { close(server_fd); return; }
+    if (activity <= 0) {
+        close(server_fd);
+        return;
+    }
 
     sockaddr_in client_addr{};
     socklen_t client_len = sizeof(client_addr);
     int client_fd = accept(server_fd, (sockaddr*)&client_addr, &client_len);
 
-    if (client_fd < 0) { perror("[Listen] accept"); close(server_fd); return; }
+    if (client_fd < 0) {
+        ServerLog->Write("[Listen] Accept", LOGLEVEL_ERROR);
+        close(server_fd);
+        return;
+    }
 
     char client_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
@@ -119,7 +137,7 @@ void Orchestrator::serverListen(uint16_t port, uint16_t listen_timeout, std::fun
     try {
         ondata_callback(client);
     } catch (...) {
-        fprintf(stderr, "[Listen] Callback error\n");
+        ServerLog->Write("[Listen] Callback error", LOGLEVEL_ERROR);
     }
 
     close(client_fd);
@@ -988,11 +1006,9 @@ bool Orchestrator::SaveConfiguration() {
 }
 
 bool Orchestrator::resolveInterfaceOrIp(const std::string& ifaceOrIp, in_addr& out) {
-    // Se for IP literal, aceita direto
     in_addr tmp{};
     if (inet_aton(ifaceOrIp.c_str(), &tmp)) { out = tmp; return true; }
 
-    // Caso contrário, tenta resolver o NOME da interface para um IPv4
     ifaddrs* ifaddr = nullptr;
     if (getifaddrs(&ifaddr) == -1) return false;
 
@@ -1000,7 +1016,7 @@ bool Orchestrator::resolveInterfaceOrIp(const std::string& ifaceOrIp, in_addr& o
     for (ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
         if (!ifa->ifa_addr) continue;
         if (ifa->ifa_addr->sa_family != AF_INET) continue;
-        if (ifaceOrIp != ifa->ifa_name) continue; // match exato do nome da iface
+        if (ifaceOrIp != ifa->ifa_name) continue;
         out = ((sockaddr_in*)ifa->ifa_addr)->sin_addr;
         ok = true;
         break;
@@ -1074,7 +1090,7 @@ int Orchestrator::Manage() {
                     running = false;
                 } break;
                 case SIGHUP: {
-                    ServerLog->Write("SIGHUP", LOGLEVEL_INFO);
+                    ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
                     ReadConfiguration();
                 } break;
                 case SIGUSR1: {
@@ -1093,6 +1109,7 @@ int Orchestrator::Manage() {
                 } break;
             }
         }
+
     }
 
     close(sfd);
