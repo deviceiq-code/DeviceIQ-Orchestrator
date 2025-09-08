@@ -1049,7 +1049,6 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
 }
 
 int Orchestrator::Manage() {
-    // === Máscara de sinais para signalfd ===
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
@@ -1057,7 +1056,7 @@ int Orchestrator::Manage() {
     sigaddset(&mask, SIGHUP);
     sigaddset(&mask, SIGUSR1);
     sigaddset(&mask, SIGUSR2);
-    sigaddset(&mask, SIGPIPE); // evita que SIGPIPE mate o processo
+    sigaddset(&mask, SIGPIPE); // prevent SIGPIPE to kill process
 
     if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
         ServerLog->Write("[Manager] pthread_sigmask", LOGLEVEL_ERROR);
@@ -1070,7 +1069,6 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // === Socket TCP do Manager ===
     int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (manager_fd == -1) {
         ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
@@ -1078,7 +1076,6 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // Opções antes do bind
     int opt = 1;
     if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
@@ -1087,8 +1084,6 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // === "applyBindForUdpSocket" embutido: somente opções, sem bind ===
-    // Se "Bind" definido, tenta SO_BINDTODEVICE (requer root/cap_net_raw). Se falhar, seguimos adiante.
     if (mBindAddr.s_addr != 0) {
         const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
@@ -1099,14 +1094,12 @@ int Orchestrator::Manage() {
         }
     }
 
-    // === Bind único (por IP resolvido) ===
     sockaddr_in address{};
     address.sin_family = AF_INET;
     address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
     address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
-        perror("[Manager] bind");
         ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
         close(manager_fd);
         close(sfd);
@@ -1114,35 +1107,31 @@ int Orchestrator::Manage() {
     }
 
     if (listen(manager_fd, 10) < 0) {
-        perror("[Manager] listen");
         ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
         close(manager_fd);
         close(sfd);
         return 1;
     }
 
-    // Buffer configurável
     const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
 
     ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
 
-    // === Loop principal com poll() em sinais e socket ===
     bool running = true;
     while (running) {
         struct pollfd pfds[2];
-        pfds[0].fd = sfd;         // sinais
+        pfds[0].fd = sfd;
         pfds[0].events = POLLIN;
-        pfds[1].fd = manager_fd;  // conexões TCP
+        pfds[1].fd = manager_fd;
         pfds[1].events = POLLIN;
 
-        int pr = poll(pfds, 2, -1); // bloqueia até haver sinal OU conexão
+        int pr = poll(pfds, 2, -1);
         if (pr < 0) {
             if (errno == EINTR) continue;
-            ServerLog->Write("poll", LOGLEVEL_ERROR);
+            ServerLog->Write("[Manager] Poll", LOGLEVEL_ERROR);
             break;
         }
 
-        // 1) Tratar sinais
         if (pfds[0].revents & POLLIN) {
             signalfd_siginfo si{};
             ssize_t n = read(sfd, &si, sizeof(si));
@@ -1174,11 +1163,10 @@ int Orchestrator::Manage() {
                         break;
                 }
             } else {
-                ServerLog->Write("read(signalfd) short read", LOGLEVEL_ERROR);
+                ServerLog->Write("[Manager] read(signalfd) short read", LOGLEVEL_ERROR);
             }
         }
 
-        // 2) Tratar conexões TCP de entrada
         if (pfds[1].revents & POLLIN) {
             sockaddr_in client_addr{};
             socklen_t client_len = sizeof(client_addr);
@@ -1192,12 +1180,11 @@ int Orchestrator::Manage() {
                     if (r > 0) {
                         incoming.append(buffer.data(), static_cast<size_t>(r));
                     } else if (r == 0) {
-                        // peer fechou
+                        // peer closed
                         break;
                     } else {
                         if (errno == EINTR) continue;
-                        // erro na leitura
-                        perror("[Manager] recv");
+                        ServerLog->Write("[Manager] recv", LOGLEVEL_ERROR);
                         break;
                     }
                 }
@@ -1207,12 +1194,11 @@ int Orchestrator::Manage() {
                 client.IncomingBuffer = incoming;
                 client.Info = client_addr;
 
-                // Aqui entra sua lógica de processamento da mensagem recebida:
-                ServerLog->Write(incoming, LOGLEVEL_INFO);
+                ServerLog->Write(incoming, LOGLEVEL_INFO); // Implement logic
 
                 close(client_fd);
             } else {
-                perror("[Manager] accept");
+                ServerLog->Write("[Manager] accept", LOGLEVEL_ERROR);
             }
         }
     }
