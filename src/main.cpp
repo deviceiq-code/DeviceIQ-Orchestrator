@@ -49,6 +49,7 @@ int main(int argc, char** argv) {
     clp.OnAction("pull", []() { Action = ACTION_PULL; });
     clp.OnAction("push", []() { Action = ACTION_PUSH; });
     clp.OnAction("manage", []() { Action = ACTION_MANAGE; });
+    clp.OnAction("checkonline", []() { Action = ACTION_CHECKONLINE; });
 
     // Parameters
 
@@ -178,6 +179,10 @@ int main(int argc, char** argv) {
         case ACTION_MANAGE : {
             int r = ServerOrchestrator->Manage();
             exit(r);
+        } break;
+        case ACTION_CHECKONLINE : {
+            fprintf(stdout, "Orchestrator server is %s\r\n\r\n", (ServerOrchestrator->CheckOnline("192.168.2.144", 30030) ? "online" : "offline"));
+            exit(0);
         } break;
         default: {
             fprintf(stderr, "Invalid request.\r\n\r\n");

@@ -5,6 +5,7 @@
         "Log File Append": false,
         "Port": 30030,
         "Timeout Ms": 15000,
+        "Token": "token_test",
         "Buffer Size": 1024,
         "Server ID": "ZCZ95YJJ693UF78",
         "Server Name": "Genesis",

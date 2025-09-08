@@ -38,7 +38,7 @@ constexpr char DEF_SERVERNAME[] = "Orchestrator";
 constexpr bool DEF_FORCE = false;
 constexpr bool DEF_APPLY = false;
 
-enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE };
+enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE };
 enum DiscoveryMode { DISCOVERY_NONE, DISCOVERY_ALL, DISCOVERY_UNMANAGED, DISCOVERY_MANAGED };
 
 enum OperationResult {
@@ -143,6 +143,7 @@ class Orchestrator {
         OperationResult Push(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool apply = DEF_APPLY);
 
         int Manage();
+        bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
         bool Update(std::string target);
         bool Restart(std::string target);

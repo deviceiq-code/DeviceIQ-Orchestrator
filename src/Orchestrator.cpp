@@ -1252,15 +1252,15 @@ int Orchestrator::Manage() {
                 OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
                 client->IncomingBuffer(incoming);
 
-                if ((client->IncomingJSON().contains("Orchestrator")) && (client->IncomingJSON()["Orchestrator"].value("Version", "") == Version.Software.Info())) {
-                    const string &Command = JSON<string>(client->IncomingJSON()["Orchestrator"].value("Command", ""));
-                    const string &Parameter = JSON<string>(client->IncomingJSON()["Orchestrator"].value("Parameter", ""));
+                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Version.Software.Info())) {
+                    const string &Command = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Command", ""));
+                    const string &Parameter = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Parameter", ""));
 
                     json JsonReply;
                     bool replied = false;
 
                     if (Command == "IsOnline") {
-                        JsonReply["Orchestrator"] = {
+                        JsonReply[Version.ProductName] = {
                             {"Result", "Yes"},
                             {"Timestamp", CurrentDateTime()}
                         };
@@ -1286,4 +1286,15 @@ int Orchestrator::Manage() {
 
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
+}
+
+bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port) {
+    json JsonReply;
+    JsonReply[Version.ProductName] = {
+        {"Version", Version.Software.Info()},
+        {"Command", "IsOnline"},
+        {"Parameter", ""}
+    };
+
+    return true;
 }
