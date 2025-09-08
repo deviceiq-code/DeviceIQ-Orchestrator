@@ -1,5 +1,40 @@
 #include "../include/Orchestrator.h"
 
+
+bool OrchestratorClient::Reply() {
+    if (mID <= 0) return false;
+    if (mOutgoingJSON.empty()) return true;
+
+    string replymessage = mOutgoingJSON.dump(-1);
+
+    const char* data = replymessage.data();
+    size_t total_sent = 0;
+    size_t remaining  = replymessage.size();
+
+    constexpr int SEND_TIMEOUT_MS = 3000;
+
+    while (remaining > 0) {
+        ssize_t n = ::send(mID, data + total_sent, remaining, MSG_NOSIGNAL);
+        if (n > 0) {
+            total_sent += static_cast<size_t>(n);
+            remaining -= static_cast<size_t>(n);
+            continue;
+        }
+        if (n == -1) {
+            if (errno == EINTR) continue;
+
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                struct pollfd pfd{mID, POLLOUT, 0 };
+                int pr = ::poll(&pfd, 1, SEND_TIMEOUT_MS);
+                if (pr > 0) continue;
+                return false;
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
 void OrchestratorClient::IncomingBuffer(const string &value) {
     mIncomingBuffer = value;
     mIncomingJSON.clear();
@@ -9,6 +44,10 @@ void OrchestratorClient::IncomingBuffer(const string &value) {
     } catch (...) {
         
     }
+}
+
+void OrchestratorClient::OutgoingBuffer(const json &value) {
+    OutgoingBuffer(value.dump());
 }
 
 void OrchestratorClient::OutgoingBuffer(const string &value) {
@@ -1214,31 +1253,26 @@ int Orchestrator::Manage() {
                 client->IncomingBuffer(incoming);
 
                 if ((client->IncomingJSON().contains("Orchestrator")) && (client->IncomingJSON()["Orchestrator"].value("Version", "") == Version.Software.Info())) {
-                    ServerLog->Write("Valid Protocol", LOGLEVEL_INFO);
+                    const string &Command = JSON<string>(client->IncomingJSON()["Orchestrator"].value("Command", ""));
+                    const string &Parameter = JSON<string>(client->IncomingJSON()["Orchestrator"].value("Parameter", ""));
+
+                    json JsonReply;
+                    bool replied = false;
+
+                    if (Command == "IsOnline") {
+                        JsonReply["Orchestrator"] = {
+                            {"Result", "Yes"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
+
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
+
+                    if (replied) ServerLog->Write("Request [" + Command + "][" + Parameter + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
                 } else {
-                    ServerLog->Write("Protocol Error - Incoming Buffer [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
+                    ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
                 }
-                
-                // if (incoming.contains("Orchestrator") &&
-                //     incoming["Orchestrator"].value("Status", "") == "Added" &&
-                //     incoming.contains("DeviceIQ") &&
-                //     incoming["DeviceIQ"].value("MAC Address", "") == resolved_mac) {
-
-                //     const auto& dev = incoming["DeviceIQ"];
-
-                //     Configuration["Managed Devices"][resolved_mac] = {
-                //         {"Product Name", dev.value("Product Name", "")},
-                //         {"Hardware Model", dev.value("Hardware Model", "")},
-                //         {"Device Name", dev.value("Device Name", "")},
-                //         {"Version", dev.value("Version", "")},
-                //         {"Hostname", dev.value("Hostname", "")},
-                //         {"MAC Address", resolved_mac},
-                //         {"IP Address", resolved_ip},
-                //         {"Last Update", CurrentDateTime()}
-                //     };
-
-                //     result = SaveConfiguration() ? ADD_SUCCESS : ADD_FAIL;
-                // }
 
                 close(client_fd);
             } else {
