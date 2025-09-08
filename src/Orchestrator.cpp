@@ -787,7 +787,7 @@ OperationResult Orchestrator::Push(std::string target, const uint16_t listen_tim
             while (remaining > 0) {
                 ssize_t sent = send(client.ID, data_ptr + total_sent, remaining, 0);
                 if (sent <= 0) {
-                    perror("[Push] TCP send failed");
+                    perror("[Push] TCP send failed");       
                     return;
                 }
                 total_sent += sent;
@@ -980,6 +980,8 @@ bool Orchestrator::ReadConfiguration() {
             {"Log File Append", false},
             {"Bind", ""},
             {"Port", 30030},
+            {"Timeout Ms", 15000},
+            {"Buffer Size", 1024},
             {"Server ID", ""},
             {"Server Name", ""},
             {"Syslog Port", 514},
@@ -1054,18 +1056,65 @@ int Orchestrator::Manage() {
     sigaddset(&mask, SIGHUP);
     sigaddset(&mask, SIGUSR1);
     sigaddset(&mask, SIGUSR2);
-    sigaddset(&mask, SIGPIPE); // opcional: para não matar o processo com SIGPIPE
+    sigaddset(&mask, SIGPIPE); // avoid close with SIGPIPE
 
     if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
-        ServerLog->Write("pthread_sigmask", LOGLEVEL_ERROR);
+        ServerLog->Write("[Manager] pthread_sigmask", LOGLEVEL_ERROR);
         return 1;
     }
 
     int sfd = signalfd(-1, &mask, SFD_CLOEXEC);
     if (sfd == -1) {
-        ServerLog->Write("signalfd", LOGLEVEL_ERROR);
+        ServerLog->Write("[Manager] signalfd", LOGLEVEL_ERROR);
         return 1;
     }
+
+    int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (manager_fd == -1) {
+        ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
+        close(sfd);
+        return 1;
+    }
+
+    int opt = 1;
+    if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(sfd);
+        return 1;
+    }
+
+    if (mBindAddr.s_addr != 0) {
+        const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
+        if (!iface.empty()) {
+            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
+                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou (prosseguindo com bind por IP)", LOGLEVEL_WARNING);
+            }
+        }
+    }
+
+    sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+    address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+
+    if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
+        ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(sfd);
+        return 1;
+    }
+
+    if (listen(manager_fd, 10) < 0) {
+        ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(sfd);
+        return 1;
+    }
+
+    fd_set readfds;
+    struct timeval timeout{};
+    timeout.tv_sec = (Configuration["Configuration"]["Timeout Ms"].get<uint32_t>() / 1000);
 
     ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
 
@@ -1088,38 +1137,69 @@ int Orchestrator::Manage() {
             }
 
             switch (si.ssi_signo) {
-                case SIGINT: {
+                case SIGINT:
                     ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
                     running = false;
-                } break;
-                case SIGTERM: {
+                    break;
+                case SIGTERM:
                     ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
                     running = false;
-                } break;
-                case SIGHUP: {
+                    break;
+                case SIGHUP:
                     ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
                     ReadConfiguration();
-                } break;
-                case SIGUSR1: {
+                    break;
+                case SIGUSR1:
                     ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
-                    // Do something
-                } break;
-                case SIGUSR2: {
+                    // ação custom
+                    break;
+                case SIGUSR2:
                     ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
-                    // Do something
-                } break;
-                case SIGPIPE: {
+                    // ação custom
+                    break;
+                case SIGPIPE:
                     ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
-                } break;
-                default: {
+                    break;
+                default:
                     ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
-                } break;
+                    break;
             }
         }
 
+        FD_ZERO(&readfds);
+        FD_SET(manager_fd, &readfds);
+        int activity = select(manager_fd + 1, &readfds, nullptr, nullptr, &timeout);
+        if (activity <= 0) break;
+
+        if (FD_ISSET(manager_fd, &readfds)) {
+            struct sockaddr_in client_addr{};
+            socklen_t client_len = sizeof(client_addr);
+            int client_fd = accept(manager_fd, (struct sockaddr*)&client_addr, &client_len);
+
+            if (client_fd >= 0) {
+                std::string incoming;
+                std::vector<char> buffer(Configuration["Configuration"]["Buffer Size"].get<size_t>(), 0);
+                ssize_t valread;
+
+                while ((valread = recv(client_fd, buffer.data(), buffer.size(), 0)) > 0) {
+                    incoming.append(buffer.data(), valread);
+                }
+
+                Client client;
+                client.ID = client_fd;
+                client.IncomingBuffer = incoming;
+                client.Info = client_addr;
+
+                ServerLog->Write(incoming, LOGLEVEL_INFO); // ponto para lógica
+
+                close(client_fd);
+            }
+        }
     }
 
+    close(manager_fd);
     close(sfd);
+
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
 }

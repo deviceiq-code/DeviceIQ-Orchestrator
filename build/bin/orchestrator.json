@@ -4,6 +4,8 @@
         "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
         "Log File Append": false,
         "Port": 30030,
+        "Timeout Ms": 15000,
+        "Buffer Size": 1024,
         "Server ID": "ZCZ95YJJ693UF78",
         "Server Name": "Genesis",
         "Syslog Port": 514,
