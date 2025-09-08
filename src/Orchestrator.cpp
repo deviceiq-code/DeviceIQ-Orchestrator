@@ -1,5 +1,27 @@
 #include "../include/Orchestrator.h"
 
+void OrchestratorClient::IncomingBuffer(const string &value) {
+    mIncomingBuffer = value;
+    mIncomingJSON.clear();
+
+    try {
+        mIncomingJSON = json::parse(mIncomingBuffer);
+    } catch (...) {
+        
+    }
+}
+
+void OrchestratorClient::OutgoingBuffer(const string &value) {
+    mOutgoingBuffer = value;
+    mOutgoingJSON.clear();
+
+    try {
+        mOutgoingJSON = json::parse(mOutgoingBuffer);
+    } catch (...) {
+
+    }
+}
+
 void Orchestrator::init() {
 
 }
@@ -1063,8 +1085,8 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    int sfd = signalfd(-1, &mask, SFD_CLOEXEC);
-    if (sfd == -1) {
+    int signal_fd = signalfd(-1, &mask, SFD_CLOEXEC);
+    if (signal_fd == -1) {
         ServerLog->Write("[Manager] signalfd", LOGLEVEL_ERROR);
         return 1;
     }
@@ -1072,7 +1094,7 @@ int Orchestrator::Manage() {
     int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (manager_fd == -1) {
         ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
-        close(sfd);
+        close(signal_fd);
         return 1;
     }
 
@@ -1080,15 +1102,14 @@ int Orchestrator::Manage() {
     if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
         close(manager_fd);
-        close(sfd);
+        close(signal_fd);
         return 1;
     }
 
     if (mBindAddr.s_addr != 0) {
         const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
-            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE,
-                           iface.c_str(), (socklen_t)iface.size()) < 0) {
+            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
                 ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
             }
         }
@@ -1102,14 +1123,14 @@ int Orchestrator::Manage() {
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
         ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
         close(manager_fd);
-        close(sfd);
+        close(signal_fd);
         return 1;
     }
 
     if (listen(manager_fd, 10) < 0) {
         ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
         close(manager_fd);
-        close(sfd);
+        close(signal_fd);
         return 1;
     }
 
@@ -1120,7 +1141,7 @@ int Orchestrator::Manage() {
     bool running = true;
     while (running) {
         struct pollfd pfds[2];
-        pfds[0].fd = sfd;
+        pfds[0].fd = signal_fd;
         pfds[0].events = POLLIN;
         pfds[1].fd = manager_fd;
         pfds[1].events = POLLIN;
@@ -1134,7 +1155,7 @@ int Orchestrator::Manage() {
 
         if (pfds[0].revents & POLLIN) {
             signalfd_siginfo si{};
-            ssize_t n = read(sfd, &si, sizeof(si));
+            ssize_t n = read(signal_fd, &si, sizeof(si));
             if (n == sizeof(si)) {
                 switch (si.ssi_signo) {
                     case SIGINT:
@@ -1189,12 +1210,31 @@ int Orchestrator::Manage() {
                     }
                 }
 
-                Client client;
-                client.ID = client_fd;
-                client.IncomingBuffer = incoming;
-                client.Info = client_addr;
+                OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
+                client->IncomingBuffer(incoming);
 
-                ServerLog->Write(incoming, LOGLEVEL_INFO); // Implement logic
+                ServerLog->Write(client->IncomingBuffer(), LOGLEVEL_INFO); // Implement logic
+                
+                // if (incoming.contains("Orchestrator") &&
+                //     incoming["Orchestrator"].value("Status", "") == "Added" &&
+                //     incoming.contains("DeviceIQ") &&
+                //     incoming["DeviceIQ"].value("MAC Address", "") == resolved_mac) {
+
+                //     const auto& dev = incoming["DeviceIQ"];
+
+                //     Configuration["Managed Devices"][resolved_mac] = {
+                //         {"Product Name", dev.value("Product Name", "")},
+                //         {"Hardware Model", dev.value("Hardware Model", "")},
+                //         {"Device Name", dev.value("Device Name", "")},
+                //         {"Version", dev.value("Version", "")},
+                //         {"Hostname", dev.value("Hostname", "")},
+                //         {"MAC Address", resolved_mac},
+                //         {"IP Address", resolved_ip},
+                //         {"Last Update", CurrentDateTime()}
+                //     };
+
+                //     result = SaveConfiguration() ? ADD_SUCCESS : ADD_FAIL;
+                // }
 
                 close(client_fd);
             } else {
@@ -1204,7 +1244,7 @@ int Orchestrator::Manage() {
     }
 
     close(manager_fd);
-    close(sfd);
+    close(signal_fd);
 
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;

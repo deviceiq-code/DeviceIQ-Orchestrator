@@ -82,6 +82,27 @@ struct Client {
     void Send(char* reply) { OutgoingBuffer = reply; send(ID, OutgoingBuffer.c_str(), OutgoingBuffer.length(), 0); }
 };
 
+class OrchestratorClient {
+    private:
+        uint32_t mID;
+        sockaddr_in mInfo;
+        string mIncomingBuffer;
+        string mOutgoingBuffer;
+        json mIncomingJSON;
+        json mOutgoingJSON;
+        
+    public:
+        OrchestratorClient(uint32_t id, const sockaddr_in &info) : mID(id), mInfo(info) {}
+
+        void IncomingBuffer(const string &value);
+        const string IncomingBuffer() { return mIncomingBuffer; }
+        void OutgoingBuffer(const string &value);
+        const string OutgoingBuffer() { return mOutgoingBuffer; }
+
+        const json IncomingJSON() { return mIncomingJSON; }
+        const json OutgoingJSON() { return mOutgoingJSON; }
+};
+
 struct Device {
     uint16_t ID;
 };
