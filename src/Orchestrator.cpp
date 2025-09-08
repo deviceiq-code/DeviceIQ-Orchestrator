@@ -1049,6 +1049,7 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
 }
 
 int Orchestrator::Manage() {
+    // === Máscara de sinais para signalfd ===
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
@@ -1056,7 +1057,7 @@ int Orchestrator::Manage() {
     sigaddset(&mask, SIGHUP);
     sigaddset(&mask, SIGUSR1);
     sigaddset(&mask, SIGUSR2);
-    sigaddset(&mask, SIGPIPE); // avoid close with SIGPIPE
+    sigaddset(&mask, SIGPIPE); // evita que SIGPIPE mate o processo
 
     if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
         ServerLog->Write("[Manager] pthread_sigmask", LOGLEVEL_ERROR);
@@ -1069,6 +1070,7 @@ int Orchestrator::Manage() {
         return 1;
     }
 
+    // === Socket TCP do Manager ===
     int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (manager_fd == -1) {
         ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
@@ -1076,6 +1078,7 @@ int Orchestrator::Manage() {
         return 1;
     }
 
+    // Opções antes do bind
     int opt = 1;
     if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
@@ -1084,21 +1087,26 @@ int Orchestrator::Manage() {
         return 1;
     }
 
+    // === "applyBindForUdpSocket" embutido: somente opções, sem bind ===
+    // Se "Bind" definido, tenta SO_BINDTODEVICE (requer root/cap_net_raw). Se falhar, seguimos adiante.
     if (mBindAddr.s_addr != 0) {
         const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
-            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
-                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou (prosseguindo com bind por IP)", LOGLEVEL_WARNING);
+            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE,
+                           iface.c_str(), (socklen_t)iface.size()) < 0) {
+                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
             }
         }
     }
 
+    // === Bind único (por IP resolvido) ===
     sockaddr_in address{};
     address.sin_family = AF_INET;
     address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
     address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
+        perror("[Manager] bind");
         ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
         close(manager_fd);
         close(sfd);
@@ -1106,83 +1114,92 @@ int Orchestrator::Manage() {
     }
 
     if (listen(manager_fd, 10) < 0) {
+        perror("[Manager] listen");
         ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
         close(manager_fd);
         close(sfd);
         return 1;
     }
 
-    fd_set readfds;
-    struct timeval timeout{};
-    timeout.tv_sec = (Configuration["Configuration"]["Timeout Ms"].get<uint32_t>() / 1000);
+    // Buffer configurável
+    const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
 
     ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
 
+    // === Loop principal com poll() em sinais e socket ===
     bool running = true;
     while (running) {
-        struct pollfd pfd{ sfd, POLLIN, 0 };
-        int pr = poll(&pfd, 1, -1);
+        struct pollfd pfds[2];
+        pfds[0].fd = sfd;         // sinais
+        pfds[0].events = POLLIN;
+        pfds[1].fd = manager_fd;  // conexões TCP
+        pfds[1].events = POLLIN;
+
+        int pr = poll(pfds, 2, -1); // bloqueia até haver sinal OU conexão
         if (pr < 0) {
             if (errno == EINTR) continue;
             ServerLog->Write("poll", LOGLEVEL_ERROR);
             break;
         }
 
-        if (pfd.revents & POLLIN) {
-            signalfd_siginfo si;
+        // 1) Tratar sinais
+        if (pfds[0].revents & POLLIN) {
+            signalfd_siginfo si{};
             ssize_t n = read(sfd, &si, sizeof(si));
-            if (n != sizeof(si)) {
-                ServerLog->Write("read(signalfd)", LOGLEVEL_ERROR);
-                break;
-            }
-
-            switch (si.ssi_signo) {
-                case SIGINT:
-                    ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
-                    running = false;
-                    break;
-                case SIGTERM:
-                    ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
-                    running = false;
-                    break;
-                case SIGHUP:
-                    ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
-                    ReadConfiguration();
-                    break;
-                case SIGUSR1:
-                    ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
-                    // ação custom
-                    break;
-                case SIGUSR2:
-                    ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
-                    // ação custom
-                    break;
-                case SIGPIPE:
-                    ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
-                    break;
-                default:
-                    ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
-                    break;
+            if (n == sizeof(si)) {
+                switch (si.ssi_signo) {
+                    case SIGINT:
+                        ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
+                        running = false;
+                        break;
+                    case SIGTERM:
+                        ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
+                        running = false;
+                        break;
+                    case SIGHUP:
+                        ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
+                        ReadConfiguration();
+                        break;
+                    case SIGUSR1:
+                        ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
+                        break;
+                    case SIGUSR2:
+                        ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
+                        break;
+                    case SIGPIPE:
+                        ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
+                        break;
+                    default:
+                        ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
+                        break;
+                }
+            } else {
+                ServerLog->Write("read(signalfd) short read", LOGLEVEL_ERROR);
             }
         }
 
-        FD_ZERO(&readfds);
-        FD_SET(manager_fd, &readfds);
-        int activity = select(manager_fd + 1, &readfds, nullptr, nullptr, &timeout);
-        if (activity <= 0) break;
-
-        if (FD_ISSET(manager_fd, &readfds)) {
-            struct sockaddr_in client_addr{};
+        // 2) Tratar conexões TCP de entrada
+        if (pfds[1].revents & POLLIN) {
+            sockaddr_in client_addr{};
             socklen_t client_len = sizeof(client_addr);
-            int client_fd = accept(manager_fd, (struct sockaddr*)&client_addr, &client_len);
-
+            int client_fd = accept(manager_fd, (sockaddr*)&client_addr, &client_len);
             if (client_fd >= 0) {
                 std::string incoming;
-                std::vector<char> buffer(Configuration["Configuration"]["Buffer Size"].get<size_t>(), 0);
-                ssize_t valread;
+                std::vector<char> buffer(buf_sz);
 
-                while ((valread = recv(client_fd, buffer.data(), buffer.size(), 0)) > 0) {
-                    incoming.append(buffer.data(), valread);
+                while (true) {
+                    ssize_t r = recv(client_fd, buffer.data(), buffer.size(), 0);
+                    if (r > 0) {
+                        incoming.append(buffer.data(), static_cast<size_t>(r));
+                    } else if (r == 0) {
+                        // peer fechou
+                        break;
+                    } else {
+                        if (errno == EINTR) continue;
+                        // erro na leitura
+                        perror("[Manager] recv");
+                        break;
+                    }
                 }
 
                 Client client;
@@ -1190,9 +1207,12 @@ int Orchestrator::Manage() {
                 client.IncomingBuffer = incoming;
                 client.Info = client_addr;
 
-                ServerLog->Write(incoming, LOGLEVEL_INFO); // ponto para lógica
+                // Aqui entra sua lógica de processamento da mensagem recebida:
+                ServerLog->Write(incoming, LOGLEVEL_INFO);
 
                 close(client_fd);
+            } else {
+                perror("[Manager] accept");
             }
         }
     }

@@ -1,8 +1,7 @@
-[I][2025-09-08T12:58:57.532521Z] Configuration file: ./orchestrator.json
-[I][2025-09-08T12:58:57.532895Z] Server name: Genesis
-[I][2025-09-08T12:58:57.533042Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-08T12:58:57.533312Z] Service bind to ens4
-[I][2025-09-08T12:58:57.533506Z] Orchestrator Manager is running (pid 93816)
-[I][2025-09-08T13:05:35.617774Z] SIGINT (Ctrl+C)
-[I][2025-09-08T13:05:35.618175Z] Hello Orchestrator
-[I][2025-09-08T13:05:35.619448Z] Orchestrator Manager finished
+[I][2025-09-08T13:08:44.418563Z] Configuration file: ./orchestrator.json
+[I][2025-09-08T13:08:44.419005Z] Server name: Genesis
+[I][2025-09-08T13:08:44.419170Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-08T13:08:44.419559Z] Service bind to ens4
+[I][2025-09-08T13:08:44.419848Z] Orchestrator Manager is running (pid 94173)
+[I][2025-09-08T13:08:58.784365Z] {"DeviceIQ":{"MAC Address":"AA:BB:CC:DD:EE:FF","IP Address":"192.168.1.50"}}
+[I][2025-09-08T13:09:04.915172Z] {"DeviceIQ":{"MAC Address":"AA:BB:CC:DD:EE:FF","IP Address":"192.168.1.50"}}
