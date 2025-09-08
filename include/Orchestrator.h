@@ -99,8 +99,8 @@ class OrchestratorClient {
         void OutgoingBuffer(const string &value);
         const string OutgoingBuffer() { return mOutgoingBuffer; }
 
-        const json IncomingJSON() { return mIncomingJSON; }
-        const json OutgoingJSON() { return mOutgoingJSON; }
+        const json &IncomingJSON() const noexcept { return mIncomingJSON; }
+        const json &OutgoingJSON() const noexcept { return mOutgoingJSON; }
 };
 
 struct Device {

@@ -1213,7 +1213,11 @@ int Orchestrator::Manage() {
                 OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
                 client->IncomingBuffer(incoming);
 
-                ServerLog->Write(client->IncomingBuffer(), LOGLEVEL_INFO); // Implement logic
+                if ((client->IncomingJSON().contains("Orchestrator")) && (client->IncomingJSON()["Orchestrator"].value("Version", "") == Version.Software.Info())) {
+                    ServerLog->Write("Valid Protocol", LOGLEVEL_INFO);
+                } else {
+                    ServerLog->Write("Protocol Error - Incoming Buffer [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
+                }
                 
                 // if (incoming.contains("Orchestrator") &&
                 //     incoming["Orchestrator"].value("Status", "") == "Added" &&
