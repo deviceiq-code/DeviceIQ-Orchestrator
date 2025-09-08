@@ -7,7 +7,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL1_Relay",
-            "State": false
+            "State": true
         },
         {
             "Address": 27,
@@ -16,7 +16,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL2_Relay",
-            "State": false
+            "State": true
         },
         {
             "Address": 26,

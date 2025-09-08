@@ -11,6 +11,9 @@
 #include <random>
 #include <chrono>
 #include <fstream>
+#include <csignal>
+#include <sys/signalfd.h>
+#include <poll.h>
 #include <nlohmann/json.hpp>
 
 #include "String.h"
@@ -35,7 +38,7 @@ constexpr char DEF_SERVERNAME[] = "Orchestrator";
 constexpr bool DEF_FORCE = false;
 constexpr bool DEF_APPLY = false;
 
-enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH };
+enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE };
 enum DiscoveryMode { DISCOVERY_NONE, DISCOVERY_ALL, DISCOVERY_UNMANAGED, DISCOVERY_MANAGED };
 
 enum OperationResult {
@@ -113,6 +116,9 @@ class Orchestrator {
         OperationResult Refresh(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
         OperationResult Pull(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
         OperationResult Push(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool apply = DEF_APPLY);
+
+        int Manage();
+
         bool Update(std::string target);
         bool Restart(std::string target);
         

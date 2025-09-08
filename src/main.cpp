@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     clp.OnAction("restart", []() { Action = ACTION_RESTART; });
     clp.OnAction("pull", []() { Action = ACTION_PULL; });
     clp.OnAction("push", []() { Action = ACTION_PUSH; });
+    clp.OnAction("manage", []() { Action = ACTION_MANAGE; });
 
     // Parameters
 
@@ -173,6 +174,10 @@ int main(int argc, char** argv) {
         case ACTION_PUSH : {
             OperationResult r = ServerOrchestrator->Push(TargetDevice.c_str(), 15, Apply);
             fprintf(stdout, "Finish config pushing.\r\n\r\n");
+        } break;
+        case ACTION_MANAGE : {
+            int r = ServerOrchestrator->Manage();
+            exit(r);
         } break;
         default: {
             fprintf(stderr, "Invalid request.\r\n\r\n");

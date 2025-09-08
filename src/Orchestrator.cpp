@@ -1022,3 +1022,84 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
     
     return true;
 }
+
+int Orchestrator::Manage() {
+    // 1) Monte a máscara com os sinais desejados
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+    sigaddset(&mask, SIGUSR1);
+    sigaddset(&mask, SIGUSR2);
+    sigaddset(&mask, SIGPIPE); // opcional: para não matar o processo com SIGPIPE
+
+    // 2) Bloqueie esses sinais na thread atual (e herda para futuras threads)
+    if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
+        std::perror("pthread_sigmask");
+        return 1;
+    }
+
+    // 3) Crie um signalfd para lê-los como se fosse um arquivo
+    int sfd = signalfd(-1, &mask, SFD_CLOEXEC);
+    if (sfd == -1) {
+        std::perror("signalfd");
+        return 1;
+    }
+
+    std::cout << "Loop de sinais iniciado. Pressione Ctrl+C para sair.\n";
+
+    bool running = true;
+    while (running) {
+        // Você pode usar poll/epoll para integrar com outros fds
+        struct pollfd pfd{ sfd, POLLIN, 0 };
+        int pr = poll(&pfd, 1, -1); // bloqueia até chegar um sinal
+        if (pr < 0) {
+            if (errno == EINTR) continue; // interrompido por sinal não-mapeado
+            std::perror("poll");
+            break;
+        }
+
+        if (pfd.revents & POLLIN) {
+            signalfd_siginfo si;
+            ssize_t n = read(sfd, &si, sizeof(si));
+            if (n != sizeof(si)) {
+                std::perror("read(signalfd)");
+                break;
+            }
+
+            switch (si.ssi_signo) {
+                case SIGINT:
+                    std::cout << "Recebi SIGINT (Ctrl+C). Encerrando...\n";
+                    running = false;
+                    break;
+                case SIGTERM:
+                    std::cout << "Recebi SIGTERM. Encerrando...\n";
+                    running = false;
+                    break;
+                case SIGHUP:
+                    std::cout << "Recebi SIGHUP. (ex: recarregar config)\n";
+                    // TODO: recarregar configuração
+                    break;
+                case SIGUSR1:
+                    std::cout << "Recebi SIGUSR1. (ex: aumentar loglevel)\n";
+                    // TODO: sua ação
+                    break;
+                case SIGUSR2:
+                    std::cout << "Recebi SIGUSR2. (ex: dump de estado)\n";
+                    // TODO: sua ação
+                    break;
+                case SIGPIPE:
+                    std::cout << "Recebi SIGPIPE (ignorado).\n";
+                    break;
+                default:
+                    std::cout << "Recebi sinal não tratado: " << si.ssi_signo << "\n";
+                    break;
+            }
+        }
+    }
+
+    close(sfd);
+    std::cout << "Finalizado.\n";
+    return 0;
+}
