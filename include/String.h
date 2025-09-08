@@ -13,7 +13,7 @@
 class String : public std::string {
     public:
         String() : std::string() {}
-        String(uint16_t n) : std::string(std::to_string(n)) {}
+        String(int n) : std::string(std::to_string(n)) {}
         String(std::string str) : std::string(str) {}
         String(std::string str, size_t sz);
         String(const char* str, size_t sz);

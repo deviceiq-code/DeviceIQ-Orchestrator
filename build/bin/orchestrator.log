@@ -1,4 +1,7 @@
-[I][2025-09-07T17:16:49.480072Z] Configuration file: ./orchestrator.json
-[I][2025-09-07T17:16:49.480571Z] Server name: Genesis
-[I][2025-09-07T17:16:49.480760Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-07T17:16:49.481139Z] Service bind to ens4
+[I][2025-09-08T11:55:39.046835Z] Configuration file: ./orchestrator.json
+[I][2025-09-08T11:55:39.047123Z] Server name: Genesis
+[I][2025-09-08T11:55:39.047234Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-08T11:55:39.047531Z] Service bind to ens4
+[I][2025-09-08T11:55:39.047647Z] Orchestrator Manager is running (pid 92016)
+[I][2025-09-08T11:55:53.824592Z] SIGTERM
+[I][2025-09-08T11:55:53.824902Z] Orchestrator Manager finished

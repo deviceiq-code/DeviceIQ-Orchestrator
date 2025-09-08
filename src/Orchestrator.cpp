@@ -1024,7 +1024,6 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
 }
 
 int Orchestrator::Manage() {
-    // 1) Monte a máscara com os sinais desejados
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
@@ -1034,29 +1033,26 @@ int Orchestrator::Manage() {
     sigaddset(&mask, SIGUSR2);
     sigaddset(&mask, SIGPIPE); // opcional: para não matar o processo com SIGPIPE
 
-    // 2) Bloqueie esses sinais na thread atual (e herda para futuras threads)
     if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
-        std::perror("pthread_sigmask");
+        ServerLog->Write("pthread_sigmask", LOGLEVEL_ERROR);
         return 1;
     }
 
-    // 3) Crie um signalfd para lê-los como se fosse um arquivo
     int sfd = signalfd(-1, &mask, SFD_CLOEXEC);
     if (sfd == -1) {
-        std::perror("signalfd");
+        ServerLog->Write("signalfd", LOGLEVEL_ERROR);
         return 1;
     }
 
-    std::cout << "Loop de sinais iniciado. Pressione Ctrl+C para sair.\n";
+    ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
 
     bool running = true;
     while (running) {
-        // Você pode usar poll/epoll para integrar com outros fds
         struct pollfd pfd{ sfd, POLLIN, 0 };
-        int pr = poll(&pfd, 1, -1); // bloqueia até chegar um sinal
+        int pr = poll(&pfd, 1, -1);
         if (pr < 0) {
-            if (errno == EINTR) continue; // interrompido por sinal não-mapeado
-            std::perror("poll");
+            if (errno == EINTR) continue;
+            ServerLog->Write("poll", LOGLEVEL_ERROR);
             break;
         }
 
@@ -1064,42 +1060,42 @@ int Orchestrator::Manage() {
             signalfd_siginfo si;
             ssize_t n = read(sfd, &si, sizeof(si));
             if (n != sizeof(si)) {
-                std::perror("read(signalfd)");
+                ServerLog->Write("read(signalfd)", LOGLEVEL_ERROR);
                 break;
             }
 
             switch (si.ssi_signo) {
-                case SIGINT:
-                    std::cout << "Recebi SIGINT (Ctrl+C). Encerrando...\n";
+                case SIGINT: {
+                    ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
                     running = false;
-                    break;
-                case SIGTERM:
-                    std::cout << "Recebi SIGTERM. Encerrando...\n";
+                } break;
+                case SIGTERM: {
+                    ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
                     running = false;
-                    break;
-                case SIGHUP:
-                    std::cout << "Recebi SIGHUP. (ex: recarregar config)\n";
-                    // TODO: recarregar configuração
-                    break;
-                case SIGUSR1:
-                    std::cout << "Recebi SIGUSR1. (ex: aumentar loglevel)\n";
-                    // TODO: sua ação
-                    break;
-                case SIGUSR2:
-                    std::cout << "Recebi SIGUSR2. (ex: dump de estado)\n";
-                    // TODO: sua ação
-                    break;
-                case SIGPIPE:
-                    std::cout << "Recebi SIGPIPE (ignorado).\n";
-                    break;
-                default:
-                    std::cout << "Recebi sinal não tratado: " << si.ssi_signo << "\n";
-                    break;
+                } break;
+                case SIGHUP: {
+                    ServerLog->Write("SIGHUP", LOGLEVEL_INFO);
+                    ReadConfiguration();
+                } break;
+                case SIGUSR1: {
+                    ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
+                    // Do something
+                } break;
+                case SIGUSR2: {
+                    ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
+                    // Do something
+                } break;
+                case SIGPIPE: {
+                    ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
+                } break;
+                default: {
+                    ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
+                } break;
             }
         }
     }
 
     close(sfd);
-    std::cout << "Finalizado.\n";
+    ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
 }
