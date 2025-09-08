@@ -147,7 +147,10 @@ void Orchestrator::serverListen(uint16_t port, uint16_t listen_timeout, std::fun
 void Orchestrator::serverMultipleListen(uint16_t port, uint16_t timeoutSeconds, std::function<void(Client)> callback, size_t bufferSize) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     
-    if (server_fd == -1) { perror("[MultipleListem] socket"); return; }
+    if (server_fd == -1) {
+        ServerLog->Write("[MultipleListem] Socket", LOGLEVEL_ERROR);
+        return;
+    }
 
     struct sockaddr_in address{};
     address.sin_family = AF_INET;
@@ -158,12 +161,16 @@ void Orchestrator::serverMultipleListen(uint16_t port, uint16_t timeoutSeconds, 
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
-        perror("bind failed");
+        ServerLog->Write("[MultipleListem] Bind", LOGLEVEL_ERROR);
         close(server_fd);
         return;
     }
 
-    if (listen(server_fd, 10) < 0) { perror("[MultipleListen] listen"); close(server_fd); return; }
+    if (listen(server_fd, 10) < 0) {
+        ServerLog->Write("[MultipleListem] Listen", LOGLEVEL_ERROR);
+        close(server_fd);
+        return;
+    }
 
     fd_set readfds;
     struct timeval timeout {};
