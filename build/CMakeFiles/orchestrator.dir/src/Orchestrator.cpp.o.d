@@ -390,4 +390,8 @@ CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/netdb.h \
  /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/./Tools.h \
  /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/./Version.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Tools.h
+ /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Tools.h \
+ /usr/include/fcntl.h /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+ /usr/include/linux/falloc.h /usr/include/x86_64-linux-gnu/bits/stat.h \
+ /usr/include/x86_64-linux-gnu/bits/struct_stat.h

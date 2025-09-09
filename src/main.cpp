@@ -181,7 +181,8 @@ int main(int argc, char** argv) {
             exit(r);
         } break;
         case ACTION_CHECKONLINE : {
-            fprintf(stdout, "Orchestrator server is %s\r\n\r\n", (ServerOrchestrator->CheckOnline("192.168.2.144", 30030) ? "online" : "offline"));
+            fprintf(stdout, "Orchestrator server is: %s\r\n\r\n", (ServerOrchestrator->CheckOnline("192.168.2.144", 30030) ? "online" : "offline"));
+
             exit(0);
         } break;
         default: {

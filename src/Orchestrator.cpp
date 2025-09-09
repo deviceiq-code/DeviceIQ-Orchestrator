@@ -1252,7 +1252,7 @@ int Orchestrator::Manage() {
                 OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
                 client->IncomingBuffer(incoming);
 
-                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Version.Software.Info())) {
+                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Configuration["Configuration"]["Token"].get<string>())) {
                     const string &Command = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Command", ""));
                     const string &Parameter = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Parameter", ""));
 
@@ -1288,13 +1288,117 @@ int Orchestrator::Manage() {
     return 0;
 }
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <cstring>
+
+json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload) {
+    struct addrinfo hints{};
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    char portstr[16];
+    snprintf(portstr, sizeof(portstr), "%u", orchestrator_port);
+
+    struct addrinfo* res = nullptr;
+    int gai = getaddrinfo(orchestrator_url.c_str(), portstr, &hints, &res);
+    if (gai != 0 || !res) return false;
+
+    const int CONNECT_TIMEOUT_MS = 700; // connect
+    const int READ_TIMEOUT_SEC = 1; // recv
+
+    json reply;
+
+    for (auto* rp = res; rp != nullptr; rp = rp->ai_next) {
+        int fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (fd < 0) continue;
+
+        int flags = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+        int rc = connect(fd, rp->ai_addr, rp->ai_addrlen);
+        if (rc < 0 && errno != EINPROGRESS && errno != EALREADY) { close(fd); continue; }
+
+        struct pollfd pfd{ fd, POLLOUT, 0 };
+        int pr = poll(&pfd, 1, CONNECT_TIMEOUT_MS);
+        if (pr <= 0) { close(fd); continue; }
+
+        int soerr = 0; socklen_t len = sizeof(soerr);
+        if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &soerr, &len) < 0 || soerr != 0) { close(fd); continue; }
+
+        fcntl(fd, F_SETFL, flags);
+
+        timeval tv{ READ_TIMEOUT_SEC, 0 };
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+        std::string dumped = payload.dump(-1);
+        const char* p = dumped.c_str();
+        size_t to_send = dumped.size();
+
+        while (to_send > 0) {
+            ssize_t n = send(fd, p, to_send, 0);
+            if (n < 0) {
+                if (errno == EINTR) continue;
+                close(fd);
+                fd = -1;
+                break;
+            }
+            p += n;
+            to_send -= static_cast<size_t>(n);
+        }
+        if (fd < 0) continue;
+
+        shutdown(fd, SHUT_WR);
+
+        std::string incoming;
+        char buf[4096];
+        while (true) {
+            ssize_t r = recv(fd, buf, sizeof(buf), 0);
+            if (r > 0) { incoming.append(buf, static_cast<size_t>(r)); }
+            else if (r == 0) { break; }
+            else {
+                if (errno == EINTR) continue;
+                if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+                incoming.clear();
+                break;
+            }
+        }
+        close(fd);
+
+        try {
+            if (!incoming.empty()) reply = json::parse(incoming);
+        } catch (...) {
+            
+        }
+        break;
+    }
+
+    freeaddrinfo(res);
+    return reply;
+}
+
 bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port) {
-    json JsonReply;
-    JsonReply[Version.ProductName] = {
+    json JsonQuery;
+    JsonQuery["Orchestrator"] = {
         {"Version", Version.Software.Info()},
+        {"Token", "token_test"},
         {"Command", "IsOnline"},
         {"Parameter", ""}
     };
 
-    return true;
+    json JsonReply = Query("192.168.2.144", 30030, JsonQuery);
+    bool rst = false;
+
+    if (!JsonReply.empty()) {
+        if (JsonReply.contains("Orchestrator") && JsonReply["Orchestrator"].is_object()) {
+            rst = (JsonReply["Orchestrator"].value("Result", "") == "Yes" ? true : false);
+        }
+    }
+    return rst;
 }
