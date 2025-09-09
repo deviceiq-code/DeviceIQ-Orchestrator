@@ -8,9 +8,19 @@
 #include <ifaddrs.h>
 #include <unistd.h>
 #include <thread>
+#include <sys/timerfd.h>
+#include <fcntl.h>
 #include <random>
 #include <chrono>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <cstring>
 #include <csignal>
 #include <sys/signalfd.h>
 #include <poll.h>
@@ -113,6 +123,8 @@ struct Device {
 
 class Orchestrator {
     private:
+        string mServerStartedTimestamp;
+
         in_addr mBindAddr{};
         bool resolveInterfaceOrIp(const string& ifaceOrIp, in_addr& out);
         bool setBindInterface(const std::string& ifaceOrIp);
@@ -133,6 +145,9 @@ class Orchestrator {
 
         inline std::string ConfigFile() const { return mConfigFile; }
         inline void ConfigFile(const std::string& value) { mConfigFile = value; }
+
+        inline const string &ServerStartedTimestamp() const { return mServerStartedTimestamp; }
+        void UpdateStatus(bool status);
 
         void List();
         void Discovery(const DiscoveryMode mode, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const char* dest_address = DEF_BROADCASTADDRESS);

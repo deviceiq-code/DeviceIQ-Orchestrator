@@ -10,7 +10,12 @@
         "Server ID": "ZCZ95YJJ693UF78",
         "Server Name": "Genesis",
         "Syslog Port": 514,
-        "Syslog URL": ""
+        "Syslog URL": "",
+        "Status Updater": {
+            "Interval": 15,
+            "Enabled": true,
+            "Output File": "/var/www/html/status.json"
+        }
     },
     "Managed Devices": {
 	"D8:13:2A:7E:EE:C4": {

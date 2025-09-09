@@ -62,7 +62,7 @@ void OrchestratorClient::OutgoingBuffer(const string &value) {
 }
 
 void Orchestrator::init() {
-
+    mServerStartedTimestamp = CurrentDateTime();
 }
 
 std::string Orchestrator::generateRandomID() {
@@ -1109,194 +1109,6 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
     return true;
 }
 
-int Orchestrator::Manage() {
-    sigset_t mask;
-    sigemptyset(&mask);
-    sigaddset(&mask, SIGINT);
-    sigaddset(&mask, SIGTERM);
-    sigaddset(&mask, SIGHUP);
-    sigaddset(&mask, SIGUSR1);
-    sigaddset(&mask, SIGUSR2);
-    sigaddset(&mask, SIGPIPE); // prevent SIGPIPE to kill process
-
-    if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
-        ServerLog->Write("[Manager] pthread_sigmask", LOGLEVEL_ERROR);
-        return 1;
-    }
-
-    int signal_fd = signalfd(-1, &mask, SFD_CLOEXEC);
-    if (signal_fd == -1) {
-        ServerLog->Write("[Manager] signalfd", LOGLEVEL_ERROR);
-        return 1;
-    }
-
-    int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (manager_fd == -1) {
-        ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
-        close(signal_fd);
-        return 1;
-    }
-
-    int opt = 1;
-    if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
-        close(manager_fd);
-        close(signal_fd);
-        return 1;
-    }
-
-    if (mBindAddr.s_addr != 0) {
-        const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
-        if (!iface.empty()) {
-            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
-                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
-            }
-        }
-    }
-
-    sockaddr_in address{};
-    address.sin_family = AF_INET;
-    address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
-    address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
-
-    if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
-        ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
-        close(manager_fd);
-        close(signal_fd);
-        return 1;
-    }
-
-    if (listen(manager_fd, 10) < 0) {
-        ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
-        close(manager_fd);
-        close(signal_fd);
-        return 1;
-    }
-
-    const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
-
-    ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
-
-    bool running = true;
-    while (running) {
-        struct pollfd pfds[2];
-        pfds[0].fd = signal_fd;
-        pfds[0].events = POLLIN;
-        pfds[1].fd = manager_fd;
-        pfds[1].events = POLLIN;
-
-        int pr = poll(pfds, 2, -1);
-        if (pr < 0) {
-            if (errno == EINTR) continue;
-            ServerLog->Write("[Manager] Poll", LOGLEVEL_ERROR);
-            break;
-        }
-
-        if (pfds[0].revents & POLLIN) {
-            signalfd_siginfo si{};
-            ssize_t n = read(signal_fd, &si, sizeof(si));
-            if (n == sizeof(si)) {
-                switch (si.ssi_signo) {
-                    case SIGINT:
-                        ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
-                        running = false;
-                        break;
-                    case SIGTERM:
-                        ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
-                        running = false;
-                        break;
-                    case SIGHUP:
-                        ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
-                        ReadConfiguration();
-                        break;
-                    case SIGUSR1:
-                        ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
-                        break;
-                    case SIGUSR2:
-                        ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
-                        break;
-                    case SIGPIPE:
-                        ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
-                        break;
-                    default:
-                        ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
-                        break;
-                }
-            } else {
-                ServerLog->Write("[Manager] read(signalfd) short read", LOGLEVEL_ERROR);
-            }
-        }
-
-        if (pfds[1].revents & POLLIN) {
-            sockaddr_in client_addr{};
-            socklen_t client_len = sizeof(client_addr);
-            int client_fd = accept(manager_fd, (sockaddr*)&client_addr, &client_len);
-            if (client_fd >= 0) {
-                std::string incoming;
-                std::vector<char> buffer(buf_sz);
-
-                while (true) {
-                    ssize_t r = recv(client_fd, buffer.data(), buffer.size(), 0);
-                    if (r > 0) {
-                        incoming.append(buffer.data(), static_cast<size_t>(r));
-                    } else if (r == 0) {
-                        // peer closed
-                        break;
-                    } else {
-                        if (errno == EINTR) continue;
-                        ServerLog->Write("[Manager] recv", LOGLEVEL_ERROR);
-                        break;
-                    }
-                }
-
-                OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
-                client->IncomingBuffer(incoming);
-
-                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Configuration["Configuration"]["Token"].get<string>())) {
-                    const string &Command = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Command", ""));
-                    const string &Parameter = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Parameter", ""));
-
-                    json JsonReply;
-                    bool replied = false;
-
-                    if (Command == "IsOnline") {
-                        JsonReply[Version.ProductName] = {
-                            {"Result", "Yes"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-
-                    if (replied) ServerLog->Write("Request [" + Command + "][" + Parameter + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
-                } else {
-                    ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
-                }
-
-                close(client_fd);
-            } else {
-                ServerLog->Write("[Manager] accept", LOGLEVEL_ERROR);
-            }
-        }
-    }
-
-    close(manager_fd);
-    close(signal_fd);
-
-    ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
-    return 0;
-}
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <poll.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <cstring>
-
 json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload) {
     struct addrinfo hints{};
     hints.ai_family = AF_UNSPEC;
@@ -1401,4 +1213,242 @@ bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orc
         }
     }
     return rst;
+}
+
+int Orchestrator::Manage() {
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+    sigaddset(&mask, SIGUSR1);
+    sigaddset(&mask, SIGUSR2);
+    sigaddset(&mask, SIGPIPE); // prevent SIGPIPE to kill process
+
+    if (pthread_sigmask(SIG_BLOCK, &mask, nullptr) != 0) {
+        ServerLog->Write("[Manager] pthread_sigmask", LOGLEVEL_ERROR);
+        return 1;
+    }
+
+    int signal_fd = signalfd(-1, &mask, SFD_CLOEXEC);
+    if (signal_fd == -1) {
+        ServerLog->Write("[Manager] signalfd", LOGLEVEL_ERROR);
+        return 1;
+    }
+
+    int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (manager_fd == -1) {
+        ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
+        close(signal_fd);
+        return 1;
+    }
+
+    int timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    if (timer_fd == -1) {
+        ServerLog->Write("[Manager] timerfd create", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    itimerspec its{};
+    its.it_value.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_interval.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    if (timerfd_settime(timer_fd, 0, &its, nullptr) < 0) {
+        ServerLog->Write("[Manager] timerfd_settime", LOGLEVEL_ERROR);
+        close(timer_fd);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    int opt = 1;
+    if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    if (mBindAddr.s_addr != 0) {
+        const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
+        if (!iface.empty()) {
+            if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
+                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
+            }
+        }
+    }
+
+    sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+    address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+
+    if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
+        ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    if (listen(manager_fd, 10) < 0) {
+        ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
+
+    ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
+
+    bool running = true;
+    UpdateStatus(running);
+
+    while (running) {
+        struct pollfd pfds[3];
+        pfds[0].fd = signal_fd; pfds[0].events = POLLIN;
+        pfds[1].fd = manager_fd; pfds[1].events = POLLIN;
+        pfds[2].fd = timer_fd; pfds[2].events = POLLIN;
+
+
+
+        int pr = poll(pfds, 3, -1);
+        if (pr < 0) {
+            if (errno == EINTR) continue;
+            ServerLog->Write("[Manager] Poll", LOGLEVEL_ERROR);
+            break;
+        }
+
+        if (pfds[0].revents & POLLIN) {
+            signalfd_siginfo si{};
+            ssize_t n = read(signal_fd, &si, sizeof(si));
+            if (n == sizeof(si)) {
+                switch (si.ssi_signo) {
+                    case SIGINT:
+                        ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
+                        running = false;
+                        break;
+                    case SIGTERM:
+                        ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
+                        running = false;
+                        break;
+                    case SIGHUP:
+                        ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
+                        ReadConfiguration();
+                        break;
+                    case SIGUSR1:
+                        ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
+                        break;
+                    case SIGUSR2:
+                        ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
+                        break;
+                    case SIGPIPE:
+                        ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
+                        break;
+                    default:
+                        ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
+                        break;
+                }
+            } else {
+                ServerLog->Write("[Manager] read(signalfd) short read", LOGLEVEL_ERROR);
+            }
+        }
+
+        if (pfds[1].revents & POLLIN) {
+            sockaddr_in client_addr{};
+            socklen_t client_len = sizeof(client_addr);
+            int client_fd = accept(manager_fd, (sockaddr*)&client_addr, &client_len);
+            if (client_fd >= 0) {
+                std::string incoming;
+                std::vector<char> buffer(buf_sz);
+
+                while (true) {
+                    ssize_t r = recv(client_fd, buffer.data(), buffer.size(), 0);
+                    if (r > 0) {
+                        incoming.append(buffer.data(), static_cast<size_t>(r));
+                    } else if (r == 0) {
+                        // peer closed
+                        break;
+                    } else {
+                        if (errno == EINTR) continue;
+                        ServerLog->Write("[Manager] recv", LOGLEVEL_ERROR);
+                        break;
+                    }
+                }
+
+                OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
+                client->IncomingBuffer(incoming);
+
+                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Configuration["Configuration"]["Token"].get<string>())) {
+                    const string &Command = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Command", ""));
+                    const string &Parameter = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Parameter", ""));
+
+                    json JsonReply;
+                    bool replied = false;
+
+                    if (Command == "IsOnline") {
+                        JsonReply[Version.ProductName] = {
+                            {"Result", "Yes"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
+
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
+
+                    if (replied) ServerLog->Write("Request [" + Command + "][" + Parameter + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
+                } else {
+                    ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
+                }
+
+                close(client_fd);
+            } else {
+                ServerLog->Write("[Manager] accept", LOGLEVEL_ERROR);
+            }
+        }
+
+        if (pfds[2].revents & POLLIN) {
+            uint64_t expirations = 0;
+            ssize_t n = read(timer_fd, &expirations, sizeof(expirations));
+            if (n != sizeof(expirations)) {
+                ServerLog->Write("[Manager] read(timerfd) short read", LOGLEVEL_ERROR);
+            } else {
+                if (JSON<bool>(Configuration["Configuration"]["Status Updater"]["Enabled"], false)) {
+                    UpdateStatus(running);
+                }
+            }
+        }
+    }
+
+    close(manager_fd);
+    close(signal_fd);
+    close(timer_fd);
+
+    UpdateStatus(running);
+
+    ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
+    return 0;
+}
+
+void Orchestrator::UpdateStatus(bool status) {
+    json JsonStatusUpdater;
+    JsonStatusUpdater["Orchestrator"]["Status"] = {
+        {"Version", Version.Software.Info()},
+        {"Online", status},
+        {"Server Started", ServerStartedTimestamp()},
+        {"Last Update", CurrentDateTime()}
+    };
+
+    ofstream outFile(JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json").c_str());
+    if (!outFile.is_open()) {
+        ServerLog->Write("Failed to open Orchestrator status update file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json"), LOGLEVEL_ERROR);
+    };
+
+    outFile << JsonStatusUpdater.dump(4);
+    outFile.close();
+
+    if (!outFile.fail()) {
+        ServerLog->Write("Orchestrator status file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json") + " updated", LOGLEVEL_INFO);
+    }
 }
