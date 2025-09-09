@@ -143,8 +143,8 @@ class Orchestrator {
         OperationResult Push(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool apply = DEF_APPLY);
 
         int Manage();
-        json Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
-
+        
+        json Query (const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
         bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
         bool Update(std::string target);

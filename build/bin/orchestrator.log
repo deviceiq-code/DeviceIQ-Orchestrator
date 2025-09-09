@@ -1,6 +1,12 @@
-[I][2025-09-09T00:49:22.172944Z] Configuration file: ./orchestrator.json
-[I][2025-09-09T00:49:22.173151Z] Server name: Genesis
-[I][2025-09-09T00:49:22.173208Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-09T00:49:22.173366Z] Service bind to ens4
-[I][2025-09-09T00:49:22.173752Z] Request [IsOnline][] replied to 192.168.2.144
-[I][2025-09-09T00:49:55.379873Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:55:43.035724Z] Configuration file: ./orchestrator.json
+[I][2025-09-09T00:55:43.036032Z] Server name: Genesis
+[I][2025-09-09T00:55:43.036133Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-09T00:55:43.036333Z] Service bind to ens4
+[I][2025-09-09T00:55:43.036467Z] Orchestrator Manager is running (pid 114607)
+[I][2025-09-09T00:56:08.899567Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:56:25.393889Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:56:53.898993Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:57:25.399678Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:57:41.423497Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:58:05.391958Z] Request [IsOnline][] replied to 192.168.2.144
+[I][2025-09-09T00:58:21.340831Z] Request [IsOnline][] replied to 192.168.2.144
