@@ -1144,19 +1144,18 @@ void Orchestrator::UpdateStatus(bool status) {
 
 bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port) {
     json JsonQuery;
-    JsonQuery["Orchestrator"] = {
-        {"Version", Version.Software.Info()},
-        {"Token", "token_test"},
+    JsonQuery = {
+        {"Provider", "Orchestrator"},
         {"Command", "IsOnline"},
         {"Parameter", ""}
     };
 
-    json JsonReply = Query("192.168.2.144", 30030, JsonQuery);
+    json JsonReply = Query(orchestrator_url, orchestrator_port, JsonQuery);
     bool rst = false;
 
     if (!JsonReply.empty()) {
-        if (JsonReply.contains("Orchestrator") && JsonReply["Orchestrator"].is_object()) {
-            rst = (JsonReply["Orchestrator"].value("Result", "") == "Yes" ? true : false);
+        if (JsonReply.contains("Provider")) {
+            rst = (JsonReply.value("Result", "") == "Yes" ? true : false);
         }
     }
     return rst;
@@ -1333,22 +1332,20 @@ int Orchestrator::Manage() {
                     json JsonReply;
                     bool replied = false;
 
-                    // if (Command == "IsOnline") {
-                    //     JsonReply = {
-                    //         {"Provider", Version.ProductName},
-                    //         {"Result", "Yes"},
-                    //         {"Timestamp", CurrentDateTime()}
-                    //     };
+                    if (Command == "IsOnline") {
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", "Yes"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
 
-                    //     client->OutgoingBuffer(JsonReply);
-                    //     replied = client->Reply();
-                    // }
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
 
                     if (Command == "Discover") {
                         const json &Parameter = client->IncomingJSON()["Parameter"];
                         string r = Parameter.dump(-1);
-
-                        // {"Hardware Model":"ESP32-WROOM","Hostname":"DEVIQ-OFFICE3","IP Address":"192.168.1.107","MAC Address":"D8:13:2A:7E:EE:C4","Product Name":"Home","Server ID":"ZCZ95YJJ693UF78","Version":"1.0.1"}
 
                         json Slot;
                         if (Configuration["Managed Devices"].contains(Parameter["Hostname"]) && Configuration["Managed Devices"][Parameter["Hostname"]]["MAC Address"] == Parameter["MAC Address"]) {
