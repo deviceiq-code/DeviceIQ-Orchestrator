@@ -48,7 +48,7 @@ constexpr char DEF_SERVERNAME[] = "Orchestrator";
 constexpr bool DEF_FORCE = false;
 constexpr bool DEF_APPLY = false;
 
-enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE };
+enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_RESTART2, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE };
 enum DiscoveryMode { DISCOVERY_NONE, DISCOVERY_ALL, DISCOVERY_UNMANAGED, DISCOVERY_MANAGED };
 
 enum OperationResult {
@@ -150,7 +150,7 @@ class Orchestrator {
         void UpdateStatus(bool status);
 
         void List();
-        void Discovery(const DiscoveryMode mode, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const char* dest_address = DEF_BROADCASTADDRESS);
+        void Discovery(const DiscoveryMode mode, const string &dest_address = DEF_BROADCASTADDRESS);
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Refresh(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
@@ -159,7 +159,9 @@ class Orchestrator {
 
         int Manage();
         
-        json Query (const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
+        json Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
+        bool SendToDevice(const std::string& destination, const json& payload);
+
         bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
         bool Update(std::string target);

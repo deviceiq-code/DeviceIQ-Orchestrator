@@ -313,83 +313,6 @@ void Orchestrator::List() {
     }
 }
 
-void Orchestrator::Discovery(const DiscoveryMode mode, const uint16_t listen_timeout, const char* dest_address) {
-    if (mBindAddr.s_addr == 0) return; //no Bind
-
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    uint16_t mDiscoveredDevices = 0;
-
-    json JsonReply = {
-        {"Provider", "Orchestrator"},
-        {"Request", "Discover"},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-        {"Calling", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
-        {"Reply Port", port}
-    };
-
-    if (sendMessage(JsonReply.dump(), port, dest_address)) {
-        fprintf(stdout, "Sending discovery for %s units - UDP (%s:%d)\r\n", JsonReply["Calling"].get<std::string>().c_str(), dest_address, port);
-    } else {
-        fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", dest_address, port);
-        return;
-    }
-
-    fprintf(stdout, "Listening on TCP port %d (timeout %d second%s)...\r\n\r\n", port, listen_timeout, (listen_timeout == 1 ? "" : "s"));
-    fprintf(stdout, "%s | %s | %s | %s | %s | %s | %s\r\n",
-        String("Product Name").LimitString(20, true).c_str(),
-        String("Hardware Model").LimitString(20, true).c_str(),
-        String("Version").LimitString(8, true).c_str(),
-        String("Device Name").LimitString(20, true).c_str(),
-        String("Hostname").LimitString(20, true).c_str(),
-        String("MAC Address").LimitString(17, true).c_str(),
-        String("IP Address").LimitString(15, true).c_str()
-    );
-
-    serverListen(port, listen_timeout, [&mDiscoveredDevices](Client client) {
-        std::string incoming;
-        char buffer[1024];
-        ssize_t valread;
-
-        struct timeval recv_timeout = {5, 0};
-        setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
-
-        while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
-
-        if (incoming.empty()) return;
-
-        try {
-            json JsonIncoming = json::parse(incoming);
-            const auto& info = JsonIncoming["DeviceIQ"];
-
-            if (info.contains("MAC Address")) {
-                mDiscoveredDevices++;
-
-                auto getField = [&](const char* key, int limit, bool alignLeft = true) -> std::string {
-                    return String(info.contains(key) ? info[key].get<std::string>() : "").LimitString(limit, alignLeft);
-                };
-
-                fprintf(stdout, "%s | %s | %s | %s | %s | %s | %s\r\n",
-                    getField("Product Name", 20).c_str(),
-                    getField("Hardware Model", 20).c_str(),
-                    getField("Version", 8).c_str(),
-                    getField("Device Name", 20).c_str(),
-                    getField("Hostname", 20).c_str(),
-                    getField("MAC Address", 17, false).c_str(),
-                    String(inet_ntoa(client.Info.sin_addr)).LimitString(15, true).c_str()
-                );
-            }
-        } catch (...) {
-
-        }
-    }, 0);
-
-    if (mDiscoveredDevices == 0) {
-        fprintf(stdout, "\r\nNo devices found.\r\n\r\n");
-    } else {
-        fprintf(stdout, "\r\n%d device%s found.\r\n\r\n", mDiscoveredDevices, (mDiscoveredDevices == 1 ? "" : "s"));
-    }
-}
-
 OperationResult Orchestrator::Add(std::string target, const uint16_t listen_timeout, const bool force) {
     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
 
@@ -1110,6 +1033,11 @@ bool Orchestrator::setBindInterface(const std::string& ifaceOrIp) {
 }
 
 json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload) {
+    json reply;
+    
+    if (payload.empty()) return false;
+    string dumped = payload.dump(-1);
+
     struct addrinfo hints{};
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -1124,8 +1052,6 @@ json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestra
 
     const int CONNECT_TIMEOUT_MS = 700; // connect
     const int READ_TIMEOUT_SEC = 1; // recv
-
-    json reply;
 
     for (auto* rp = res; rp != nullptr; rp = rp->ai_next) {
         int fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -1149,7 +1075,6 @@ json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestra
         timeval tv{ READ_TIMEOUT_SEC, 0 };
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-        std::string dumped = payload.dump(-1);
         const char* p = dumped.c_str();
         size_t to_send = dumped.size();
 
@@ -1193,6 +1118,28 @@ json Orchestrator::Query(const std::string& orchestrator_url, uint16_t orchestra
 
     freeaddrinfo(res);
     return reply;
+}
+
+void Orchestrator::UpdateStatus(bool status) {
+    json JsonStatusUpdater;
+    JsonStatusUpdater["Orchestrator"]["Status"] = {
+        {"Version", Version.Software.Info()},
+        {"Online", status},
+        {"Server Started", ServerStartedTimestamp()},
+        {"Last Update", CurrentDateTime()}
+    };
+
+    ofstream outFile(JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json").c_str());
+    if (!outFile.is_open()) {
+        ServerLog->Write("Failed to open Orchestrator status update file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json"), LOGLEVEL_ERROR);
+    };
+
+    outFile << JsonStatusUpdater.dump(4);
+    outFile.close();
+
+    if (!outFile.fail()) {
+        ServerLog->Write("Orchestrator status file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json") + " updated", LOGLEVEL_INFO);
+    }
 }
 
 bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port) {
@@ -1271,7 +1218,7 @@ int Orchestrator::Manage() {
     }
 
     if (mBindAddr.s_addr != 0) {
-        const std::string iface = JSON<std::string>(Configuration["Configuration"]["Bind"], "");
+        const std::string iface = JSON<string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
             if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
                 ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
@@ -1380,16 +1327,47 @@ int Orchestrator::Manage() {
                 OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
                 client->IncomingBuffer(incoming);
 
-                if ((client->IncomingJSON().contains(Version.ProductName)) && (client->IncomingJSON()[Version.ProductName].value("Version", "") == Version.Software.Info()) && (client->IncomingJSON()[Version.ProductName].value("Token", "") == Configuration["Configuration"]["Token"].get<string>())) {
-                    const string &Command = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Command", ""));
-                    const string &Parameter = JSON<string>(client->IncomingJSON()[Version.ProductName].value("Parameter", ""));
+                if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
+                    const string &Command = JSON<string>(client->IncomingJSON().value("Command", ""));
 
                     json JsonReply;
                     bool replied = false;
 
-                    if (Command == "IsOnline") {
-                        JsonReply[Version.ProductName] = {
-                            {"Result", "Yes"},
+                    // if (Command == "IsOnline") {
+                    //     JsonReply = {
+                    //         {"Provider", Version.ProductName},
+                    //         {"Result", "Yes"},
+                    //         {"Timestamp", CurrentDateTime()}
+                    //     };
+
+                    //     client->OutgoingBuffer(JsonReply);
+                    //     replied = client->Reply();
+                    // }
+
+                    if (Command == "Discover") {
+                        const json &Parameter = client->IncomingJSON()["Parameter"];
+                        string r = Parameter.dump(-1);
+
+                        // {"Hardware Model":"ESP32-WROOM","Hostname":"DEVIQ-OFFICE3","IP Address":"192.168.1.107","MAC Address":"D8:13:2A:7E:EE:C4","Product Name":"Home","Server ID":"ZCZ95YJJ693UF78","Version":"1.0.1"}
+
+                        json Slot;
+                        if (Configuration["Managed Devices"].contains(Parameter["Hostname"]) && Configuration["Managed Devices"][Parameter["Hostname"]]["MAC Address"] == Parameter["MAC Address"]) {
+                            Configuration["Managed Devices"][Parameter["Hostname"]] = Parameter;
+                            Configuration["Managed Devices"][Parameter["Hostname"]]["Last Update"] = CurrentDateTime();
+                            Configuration["Managed Devices"][Parameter["Hostname"]].erase("Hostname");
+                            Configuration["Managed Devices"][Parameter["Hostname"]].erase("Server ID");
+                        } else {
+                            Configuration["Unmanaged Devices"][Parameter["Hostname"]] = Parameter;
+                            Configuration["Unmanaged Devices"][Parameter["Hostname"]]["Last Update"] = CurrentDateTime();
+                            Configuration["Unmanaged Devices"][Parameter["Hostname"]].erase("Hostname");
+                            Configuration["Unmanaged Devices"][Parameter["Hostname"]].erase("Server ID");
+                        }
+
+                        SaveConfiguration();
+
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", "Ok"},
                             {"Timestamp", CurrentDateTime()}
                         };
 
@@ -1397,7 +1375,7 @@ int Orchestrator::Manage() {
                         replied = client->Reply();
                     }
 
-                    if (replied) ServerLog->Write("Request [" + Command + "][" + Parameter + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
+                    if (replied) ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
                 } else {
                     ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
                 }
@@ -1431,24 +1409,56 @@ int Orchestrator::Manage() {
     return 0;
 }
 
-void Orchestrator::UpdateStatus(bool status) {
-    json JsonStatusUpdater;
-    JsonStatusUpdater["Orchestrator"]["Status"] = {
-        {"Version", Version.Software.Info()},
-        {"Online", status},
-        {"Server Started", ServerStartedTimestamp()},
-        {"Last Update", CurrentDateTime()}
+bool Orchestrator::SendToDevice(const std::string& destination, const json& payload) {
+    if (payload.empty()) return false;
+    string dumped = payload.dump(-1);
+
+    int socket_fd, broadcast = 1;
+    struct sockaddr_in broadcast_addr;
+
+    socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (socket_fd < 0) return false;
+
+    if (mBindAddr.s_addr == 0) return false;
+    (void)setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, Configuration["Configuration"]["Bind"].get<string>().c_str(), (socklen_t)Configuration["Configuration"]["Bind"].get<string>().size());
+
+    sockaddr_in local{};
+    local.sin_family = AF_INET;
+    local.sin_port = htons(0);
+    local.sin_addr = mBindAddr;
+    (void)bind(socket_fd, (sockaddr*)&local, sizeof(local));
+
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0) {
+        close(socket_fd);
+        return false;
+    }
+
+    memset(&broadcast_addr, 0, sizeof(broadcast_addr));
+    broadcast_addr.sin_family = AF_INET;
+    broadcast_addr.sin_addr.s_addr = inet_addr(destination.c_str());
+    broadcast_addr.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+
+    if (sendto(socket_fd, dumped.c_str(), dumped.length(), 0, (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
+        close(socket_fd);
+        return false;
+    }
+
+    close(socket_fd);
+    return true;
+}
+
+void Orchestrator::Discovery(const DiscoveryMode mode, const string &dest_address) {
+    const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
+    uint16_t DiscoveredDevices = 0;
+
+    json JsonReply = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+        {"Command", "Discover"},
+        {"Parameter", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
     };
 
-    ofstream outFile(JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json").c_str());
-    if (!outFile.is_open()) {
-        ServerLog->Write("Failed to open Orchestrator status update file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json"), LOGLEVEL_ERROR);
-    };
+    if (SendToDevice(dest_address, JsonReply)) {
 
-    outFile << JsonStatusUpdater.dump(4);
-    outFile.close();
-
-    if (!outFile.fail()) {
-        ServerLog->Write("Orchestrator status file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json") + " updated", LOGLEVEL_INFO);
     }
 }

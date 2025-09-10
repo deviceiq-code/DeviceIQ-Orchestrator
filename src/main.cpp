@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
             ServerOrchestrator->List();
         } break;
         case ACTION_DISCOVERY : {
-            ServerOrchestrator->Discovery(Mode, 15, TargetDevice.c_str());
+            ServerOrchestrator->Discovery(Mode, TargetDevice);
         } break;
         case ACTION_ADD : {
             if (TargetDevice.find("255") != string::npos) {

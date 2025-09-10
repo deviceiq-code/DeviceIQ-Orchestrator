@@ -1,32 +1,31 @@
 {
     "Configuration": {
-        "Bind": "ens4",
+        "Bind": "ens3",
+        "Buffer Size": 1024,
         "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
         "Log File Append": false,
         "Port": 30030,
-        "Timeout Ms": 15000,
-        "Token": "token_test",
-        "Buffer Size": 1024,
         "Server ID": "ZCZ95YJJ693UF78",
         "Server Name": "Genesis",
+        "Status Updater": {
+            "Enabled": true,
+            "Interval": 60,
+            "Output File": "/var/www/html/status.json"
+        },
         "Syslog Port": 514,
         "Syslog URL": "",
-        "Status Updater": {
-            "Interval": 15,
-            "Enabled": true,
-            "Output File": "/var/www/html/status.json"
-        }
+        "Timeout Ms": 15000,
+        "Token": "token_test"
     },
     "Managed Devices": {
-	"D8:13:2A:7E:EE:C4": {
-            "Device Name": "DeviceIQ",
-            "Hardware Model": "ESP-32",
-            "Hostname": "DEVIQ-EEC4",
+        "DEVIQ-OFFICE3": {
+            "Hardware Model": "ESP32-WROOM",
             "IP Address": "192.168.1.107",
-            "Last Update": 1755293499,
+            "Last Update": "2025-09-10T01:17:30.106693Z",
             "MAC Address": "D8:13:2A:7E:EE:C4",
-            "Product Name": "ESP32-Pro",
-            "Version": "1.0.0"
+            "Product Name": "Home",
+            "Version": "1.0.1"
         }
-    }
+    },
+    "Unmanaged Devices": {}
 }
