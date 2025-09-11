@@ -867,52 +867,6 @@ bool Orchestrator::Update(std::string target) {
     return false;
 }
 
-bool Orchestrator::Restart(std::string target) {
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-
-    std::string ip_address, mac_address;
-
-    if (target.find(':') != std::string::npos) {
-        mac_address = target;
-        ip_address = queryIPAddress(target.c_str());
-    } else if (target.find('.') != std::string::npos) {
-        mac_address = queryMACAddress(target.c_str());
-        ip_address = target;
-    } else {
-        return false;
-    }
-
-    if (Configuration.contains("Managed Devices") && Configuration["Managed Devices"].is_object()) {
-        const auto& managedDevices = Configuration["Managed Devices"];
-        if (managedDevices.size() == 0) {
-            fprintf(stderr, "No devices managed by this Orchestrator.\r\n\r\n");
-            exit(1);
-        } else {
-            if (managedDevices.contains(mac_address)) {
-                json JsonReply;
-        
-                JsonReply["Provider"] = "Orchestrator";
-                JsonReply["Request"] = "Restart";
-                JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
-                JsonReply["MAC Address"] = mac_address;
-
-                if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
-                    fprintf(stdout, "Sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-                    return true;
-                } else {
-                    fprintf(stderr, "Error sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-                    exit(1);
-                }
-            } else {
-                fprintf(stderr, "Device %s is not managed by this Orchestrator.\r\n\r\n", mac_address.c_str());
-                exit(1);
-            }
-        }
-    }
-
-    return false;
-}
-
 bool Orchestrator::Initialize() {
     bool ret = false;
 
@@ -1474,7 +1428,7 @@ bool Orchestrator::SendToDevice(const std::string& destination, const json& payl
     return true;
 }
 
-void Orchestrator::Discovery(const DiscoveryMode mode, const string &dest_address) {
+void Orchestrator::Discovery(const DiscoveryMode mode, const string &target) {
     const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
     uint16_t DiscoveredDevices = 0;
 
@@ -1485,7 +1439,107 @@ void Orchestrator::Discovery(const DiscoveryMode mode, const string &dest_addres
         {"Parameter", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
     };
 
-    if (SendToDevice(dest_address, JsonReply)) {
+    if (SendToDevice(target, JsonReply)) {
 
     }
 }
+
+const json Orchestrator::getDevice(const string &target) {
+    const string field =
+        (target.find('.') != string::npos) ? "IP Address" :
+        (target.find(':') != string::npos) ? "MAC Address" :
+        "__HOSTNAME__";
+
+    const vector<string> sections = { "Managed Devices", "Unmanaged Devices" };
+
+    for (const auto &section : sections) {
+        if (!Configuration.contains(section) || !Configuration[section].is_object()) {
+            continue;
+        }
+
+        for (auto it = Configuration[section].begin(); it != Configuration[section].end(); ++it) {
+            if (field == "__HOSTNAME__") {
+                if (it.key() == target) {
+                    json device = it.value();
+                    device["Where"] = section;
+                    return json{{it.key(), device}};
+                }
+            } else {
+                if (it.value().contains(field) && it.value()[field].is_string()) {
+                    if (it.value()[field].get<string>() == target) {
+                        json device = it.value();
+                        device["Where"] = section;
+                        return json{{it.key(), device}};
+                    }
+                }
+            }
+        }
+    }
+
+    return json::object();
+}
+
+bool Orchestrator::Restart(const string &target) {
+    const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
+    uint16_t DiscoveredDevices = 0;
+
+    json JsonReply = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+        {"Command", "Restart"},
+        {"Parameter", ""},
+    };
+
+    ServerLog->Write(getDevice(target).dump(-1), LOGLEVEL_INFO);
+
+    // if (SendToDevice(target, JsonReply)) {
+
+    // }
+    return true;
+}
+
+// bool Orchestrator::Restart(std::string target) {
+//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+
+//     std::string ip_address, mac_address;
+
+//     if (target.find(':') != std::string::npos) {
+//         mac_address = target;
+//         ip_address = queryIPAddress(target.c_str());
+//     } else if (target.find('.') != std::string::npos) {
+//         mac_address = queryMACAddress(target.c_str());
+//         ip_address = target;
+//     } else {
+//         return false;
+//     }
+
+//     if (Configuration.contains("Managed Devices") && Configuration["Managed Devices"].is_object()) {
+//         const auto& managedDevices = Configuration["Managed Devices"];
+//         if (managedDevices.size() == 0) {
+//             fprintf(stderr, "No devices managed by this Orchestrator.\r\n\r\n");
+//             exit(1);
+//         } else {
+//             if (managedDevices.contains(mac_address)) {
+//                 json JsonReply;
+        
+//                 JsonReply["Provider"] = "Orchestrator";
+//                 JsonReply["Request"] = "Restart";
+//                 JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
+//                 JsonReply["MAC Address"] = mac_address;
+
+//                 if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
+//                     fprintf(stdout, "Sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
+//                     return true;
+//                 } else {
+//                     fprintf(stderr, "Error sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
+//                     exit(1);
+//                 }
+//             } else {
+//                 fprintf(stderr, "Device %s is not managed by this Orchestrator.\r\n\r\n", mac_address.c_str());
+//                 exit(1);
+//             }
+//         }
+//     }
+
+//     return false;
+// }

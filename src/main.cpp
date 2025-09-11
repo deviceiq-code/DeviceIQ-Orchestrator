@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
             fprintf(stdout, "update command sent.\r\n\r\n");
         } break;
         case ACTION_RESTART : {
-            bool r = ServerOrchestrator->Restart(TargetDevice.c_str());
+            bool r = ServerOrchestrator->Restart(TargetDevice);
             fprintf(stdout, "Finish restarting. %u\r\n\r\n", r);
         } break;
         case ACTION_REFRESH : {

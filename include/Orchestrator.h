@@ -134,6 +134,11 @@ class Orchestrator {
         string generateRandomID();
         string queryIPAddress(const char* mac_address);
         string queryMACAddress(const char* ip_address);
+
+        inline bool isManaged(const string &target) { return Configuration["Managed Devices"].contains(target); }
+
+        const json getDevice(const string &target);
+
         void applyBindForUdpSocket(int sockfd);
         bool sendMessage(const std::string& message, const uint16_t port, const char* dest_address = DEF_BROADCASTADDRESS);
         void serverListen(const uint16_t port, const uint16_t listen_timeout, std::function<void(Client)> ondata_callback, const size_t bufferSize = DEF_BUFFERSIZE);
@@ -150,7 +155,8 @@ class Orchestrator {
         void UpdateStatus(bool status);
 
         void List();
-        void Discovery(const DiscoveryMode mode, const string &dest_address = DEF_BROADCASTADDRESS);
+        void Discovery(const DiscoveryMode mode, const string &target = DEF_BROADCASTADDRESS);
+        bool Restart(const string &target = DEF_BROADCASTADDRESS);
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Refresh(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
@@ -166,7 +172,6 @@ class Orchestrator {
         bool ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
         bool Update(std::string target);
-        bool Restart(std::string target);
         
         bool Initialize();
         bool ReadConfiguration();
