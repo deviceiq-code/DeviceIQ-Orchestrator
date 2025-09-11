@@ -1,9 +1,5 @@
-[I][2025-09-11T00:40:59.912682Z] Configuration file: ./orchestrator.json
-[I][2025-09-11T00:40:59.912832Z] Server name: Genesis
-[I][2025-09-11T00:40:59.912876Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-11T00:40:59.912989Z] Service bind to ens3
-[I][2025-09-11T00:40:59.913322Z] Request [CheckOnline] replied to 192.168.1.198
-[I][2025-09-11T00:41:40.194674Z] Orchestrator status file /var/www/html/status.json updated
-[I][2025-09-11T00:41:53.862865Z] SIGINT (Ctrl+C)
-[I][2025-09-11T00:41:53.863791Z] Orchestrator status file /var/www/html/status.json updated
-[I][2025-09-11T00:41:53.864070Z] Orchestrator Manager finished
+[I][2025-09-11T00:50:33.499978Z] Configuration file: ./orchestrator.json
+[I][2025-09-11T00:50:33.500234Z] Server name: Genesis
+[I][2025-09-11T00:50:33.500338Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-11T00:50:33.500587Z] Service bind to ens3
+[E][2025-09-11T00:50:33.500768Z] [Manager] Bind failed - chech if TCP port 30030 is already in use

@@ -1250,7 +1250,7 @@ int Orchestrator::Manage() {
     address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
-        ServerLog->Write("[Manager] Bind", LOGLEVEL_ERROR);
+        ServerLog->Write("Bind failed - chech if TCP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
         close(manager_fd);
         close(signal_fd);
         return 1;
