@@ -1,5 +1,5 @@
-[I][2025-09-11T18:54:42.048449Z] Configuration file: ./orchestrator.json
-[I][2025-09-11T18:54:42.048816Z] Server name: Genesis
-[I][2025-09-11T18:54:42.048976Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-11T18:54:42.049461Z] Service bind to ens3
-[I][2025-09-11T18:54:42.049879Z] {"DEVIQ-OFFICE3":{"Hardware Model":"ESP32-WROOM","IP Address":"192.168.1.107","Last Update":"2025-09-11T00:02:54.145448Z","MAC Address":"D8:13:2A:7E:EE:C4","Product Name":"Home","Version":"1.0.1","Where":"Managed Devices"}}
+[I][2025-09-11T19:17:49.050516Z] Configuration file: ./orchestrator.json
+[I][2025-09-11T19:17:49.050673Z] Server name: Genesis
+[I][2025-09-11T19:17:49.050741Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-11T19:17:49.050903Z] Service bind to ens3
+[I][2025-09-11T19:17:49.051064Z] DEVIQ-OFFICE3 - 192.168.1.107

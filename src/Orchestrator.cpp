@@ -1432,14 +1432,14 @@ void Orchestrator::Discovery(const DiscoveryMode mode, const string &target) {
     const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
     uint16_t DiscoveredDevices = 0;
 
-    json JsonReply = {
+    json JsonCommand = {
         {"Provider", "Orchestrator"},
         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Command", "Discover"},
         {"Parameter", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
     };
 
-    if (SendToDevice(target, JsonReply)) {
+    if (SendToDevice(target, JsonCommand)) {
 
     }
 }
@@ -1483,18 +1483,24 @@ bool Orchestrator::Restart(const string &target) {
     const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
     uint16_t DiscoveredDevices = 0;
 
-    json JsonReply = {
+    json JsonCommand = {
         {"Provider", "Orchestrator"},
         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
         {"Command", "Restart"},
         {"Parameter", ""},
     };
 
-    ServerLog->Write(getDevice(target).dump(-1), LOGLEVEL_INFO);
+    json device = getDevice(target);
 
-    // if (SendToDevice(target, JsonReply)) {
+    if (device.empty()) { 
+        return false; // not found
+    } else {
+        auto it = device.begin();
+        ServerLog->Write(it.key() + " - " + it.value().at("IP Address").get<string>(), LOGLEVEL_INFO);
 
-    // }
+        return SendToDevice(it.value().at("IP Address").get<string>(), JsonCommand);
+    }
+
     return true;
 }
 
