@@ -1146,7 +1146,7 @@ bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orc
     json JsonQuery;
     JsonQuery = {
         {"Provider", "Orchestrator"},
-        {"Command", "IsOnline"},
+        {"Command", "CheckOnline"},
         {"Parameter", ""}
     };
 
@@ -1156,6 +1156,25 @@ bool Orchestrator::CheckOnline(const std::string& orchestrator_url, uint16_t orc
     if (!JsonReply.empty()) {
         if (JsonReply.contains("Provider")) {
             rst = (JsonReply.value("Result", "") == "Yes" ? true : false);
+        }
+    }
+    return rst;
+}
+
+bool Orchestrator::ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port) {
+    json JsonQuery;
+    JsonQuery = {
+        {"Provider", "Orchestrator"},
+        {"Command", "ReloadConfig"},
+        {"Parameter", ""}
+    };
+
+    json JsonReply = Query(orchestrator_url, orchestrator_port, JsonQuery);
+    bool rst = false;
+
+    if (!JsonReply.empty()) {
+        if (JsonReply.contains("Provider")) {
+            rst = (JsonReply.value("Result", "") == "Ok" ? true : false);
         }
     }
     return rst;
@@ -1257,8 +1276,6 @@ int Orchestrator::Manage() {
         pfds[1].fd = manager_fd; pfds[1].events = POLLIN;
         pfds[2].fd = timer_fd; pfds[2].events = POLLIN;
 
-
-
         int pr = poll(pfds, 3, -1);
         if (pr < 0) {
             if (errno == EINTR) continue;
@@ -1332,10 +1349,23 @@ int Orchestrator::Manage() {
                     json JsonReply;
                     bool replied = false;
 
-                    if (Command == "IsOnline") {
+                    if (Command == "CheckOnline") {
                         JsonReply = {
                             {"Provider", Version.ProductName},
                             {"Result", "Yes"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
+
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
+
+                    if (Command == "ReloadConfig") {
+                        ReadConfiguration();
+
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", "Ok"},
                             {"Timestamp", CurrentDateTime()}
                         };
 

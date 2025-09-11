@@ -21,11 +21,12 @@
         "DEVIQ-OFFICE3": {
             "Hardware Model": "ESP32-WROOM",
             "IP Address": "192.168.1.107",
-            "Last Update": "2025-09-10T01:17:30.106693Z",
+            "Last Update": "2025-09-11T00:02:54.145448Z",
             "MAC Address": "D8:13:2A:7E:EE:C4",
             "Product Name": "Home",
             "Version": "1.0.1"
         }
     },
-    "Unmanaged Devices": {}
+    "Unmanaged Devices": {
+    }
 }

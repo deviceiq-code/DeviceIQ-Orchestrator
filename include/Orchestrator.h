@@ -48,7 +48,7 @@ constexpr char DEF_SERVERNAME[] = "Orchestrator";
 constexpr bool DEF_FORCE = false;
 constexpr bool DEF_APPLY = false;
 
-enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_RESTART2, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE };
+enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_RELOADCONFIG, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE };
 enum DiscoveryMode { DISCOVERY_NONE, DISCOVERY_ALL, DISCOVERY_UNMANAGED, DISCOVERY_MANAGED };
 
 enum OperationResult {
@@ -163,6 +163,7 @@ class Orchestrator {
         bool SendToDevice(const std::string& destination, const json& payload);
 
         bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
+        bool ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
         bool Update(std::string target);
         bool Restart(std::string target);

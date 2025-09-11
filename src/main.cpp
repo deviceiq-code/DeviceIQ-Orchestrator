@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     clp.OnAction("push", []() { Action = ACTION_PUSH; });
     clp.OnAction("manage", []() { Action = ACTION_MANAGE; });
     clp.OnAction("checkonline", []() { Action = ACTION_CHECKONLINE; });
+    clp.OnAction("reloadconfig", []() { Action = ACTION_RELOADCONFIG; });
 
     // Parameters
 
@@ -182,6 +183,10 @@ int main(int argc, char** argv) {
         } break;
         case ACTION_CHECKONLINE : {
             fprintf(stdout, "Orchestrator server %s is: %s\r\n\r\n", TargetDevice.c_str(), (ServerOrchestrator->CheckOnline(TargetDevice, 30030) ? "online" : "offline"));
+            exit(0);
+        } break;
+        case ACTION_RELOADCONFIG : {
+            fprintf(stdout, "Reload config at Orchestrator server %s: %s\r\n\r\n", TargetDevice.c_str(), (ServerOrchestrator->ReloadConfig(TargetDevice, 30030) ? "success" : "fail"));
             exit(0);
         } break;
         default: {
