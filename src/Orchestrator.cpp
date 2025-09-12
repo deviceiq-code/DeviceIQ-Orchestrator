@@ -1431,7 +1431,7 @@ bool Orchestrator::Restart(const String &target) {
             return false;
         }
 
-        ServerLog->Write("[Restart] Multicast finished: Sent=" + std::to_string(ok) + ", Failed=" + std::to_string(fail) + ", Ignored=" + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
+        ServerLog->Write("[Restart] Multicast finished: Sent = " + std::to_string(ok) + ", Failed = " + std::to_string(fail) + ", Ignored = " + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
 
         return ok > 0;
     }
@@ -1484,12 +1484,7 @@ bool Orchestrator::Refresh(const String &target) {
             if (sent) ++ok; else ++fail;
         }
 
-        ServerLog->Write(
-            "[Refresh] Broadcast concluído: ok=" + std::to_string(ok) +
-            ", falhas=" + std::to_string(fail) +
-            ", ignorados=" + std::to_string(skipped),
-            fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO
-        );
+        ServerLog->Write("[Refresh] Multicast finished: Sent = " + std::to_string(ok) + ", Failed = " + std::to_string(fail) + ", Ignored = " + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
 
         return ok > 0;
     }
@@ -1530,24 +1525,19 @@ bool Orchestrator::Pull(const String &target) {
             const nlohmann::json &dev = kv.value();
 
             if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
-                ServerLog->Write("[Refresh] " + mac + " no IP Address found", LOGLEVEL_WARNING);
+                ServerLog->Write("[Pull] " + mac + " no IP Address found", LOGLEVEL_WARNING);
                 ++skipped;
                 continue;
             }
 
             const std::string ip = dev["IP Address"].get<std::string>();
-            ServerLog->Write("[Refresh] " + mac + " - " + ip, LOGLEVEL_INFO);
+            ServerLog->Write("[Pull] " + mac + " - " + ip, LOGLEVEL_INFO);
 
             const bool sent = SendToDevice(ip, JsonCommand);
             if (sent) ++ok; else ++fail;
         }
 
-        ServerLog->Write(
-            "[Refresh] Broadcast concluído: ok=" + std::to_string(ok) +
-            ", falhas=" + std::to_string(fail) +
-            ", ignorados=" + std::to_string(skipped),
-            fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO
-        );
+        ServerLog->Write("[Pull] Multicast finished: Sent = " + std::to_string(ok) + ", Failed = " + std::to_string(fail) + ", Ignored = " + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
 
         return ok > 0;
     }
