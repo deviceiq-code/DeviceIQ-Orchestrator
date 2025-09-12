@@ -9,3 +9,7 @@
 [I][2025-09-12T21:24:27.443004Z] Request [Pull] replied to 192.168.2.114
 [I][2025-09-12T21:24:27.444706Z] Configuration device DEVIQ-LAB saved successfuly
 [I][2025-09-12T21:24:27.444830Z] Request [Pull] replied to 192.168.2.246
+[I][2025-09-12T21:25:20.529611Z] DEVIQ-DEV information saved on Managed Devices section
+[I][2025-09-12T21:25:20.530223Z] Request [Discover] replied to 192.168.2.114
+[I][2025-09-12T21:30:16.362264Z] DEVIQ-LAB information saved on Managed Devices section
+[I][2025-09-12T21:30:16.362598Z] Request [Discover] replied to 192.168.2.246

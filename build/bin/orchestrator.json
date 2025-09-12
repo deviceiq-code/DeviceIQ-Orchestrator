@@ -18,25 +18,24 @@
         "Token": "token_test"
     },
     "Managed Devices": {
-        "D8:13:2A:7E:EE:C4": {
-            "Hardware Model": "ESP32-WROOM",
-            "Hostname": "DEVIQ-LAB",
-            "IP Address": "192.168.2.246",
-            "Last Update": "2025-09-12T21:04:33.162245Z",
-            "Local Timestamp": "2025-09-12T18:04:32.132761Z",
-            "Product Name": "Home",
-            "Version": "1.0.1"
-        },
         "3C:61:05:65:71:94": {
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-DEV",
             "IP Address": "192.168.2.114",
-            "Last Update": "2025-09-12T21:22:55.863617Z",
-            "Local Timestamp": "2025-09-12T18:22:55.028303Z",
+            "Last Update": "2025-09-12T21:25:20.529577Z",
+            "Local Timestamp": "2025-09-12T18:25:20.071562Z",
+            "Product Name": "Home",
+            "Version": "1.0.1"
+        },
+        "D8:13:2A:7E:EE:C4": {
+            "Hardware Model": "ESP32-WROOM",
+            "Hostname": "DEVIQ-LAB",
+            "IP Address": "192.168.2.246",
+            "Last Update": "2025-09-12T21:30:16.362238Z",
+            "Local Timestamp": "2025-09-12T18:30:16.955449Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         }
     },
-    "Unmanaged Devices": {
-    }
+    "Unmanaged Devices": {}
 }
