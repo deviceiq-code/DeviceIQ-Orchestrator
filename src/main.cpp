@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
             fprintf(stdout, "Finish refreshing.\r\n\r\n");
         } break;
         case ACTION_PULL : {
-            OperationResult r = ServerOrchestrator->Pull(TargetDevice.c_str(), 15);
+            bool r = ServerOrchestrator->Pull(TargetDevice);
             fprintf(stdout, "Finish config pulling.\r\n\r\n");
         } break;
         case ACTION_PUSH : {

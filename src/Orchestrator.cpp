@@ -482,232 +482,73 @@ OperationResult Orchestrator::Remove(std::string target, const uint16_t listen_t
     return result;
 }
 
-// OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_timeout) {
+// OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_timeout) {
+//     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
+//         return NOTMANAGED;
+
 //     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-//     fprintf(stdout, "\r\n");
-
-//     if ((target == "all") || (target == "255.255.255.255")) {
-//         if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object()) 
-//             return NOTMANAGED;
-
-//         std::map<std::string, json> discoveredDevices;
-
-//         json discoveryRequest = {
-//             {"Provider", "Orchestrator"},
-//             {"Request", "Discover"},
-//             {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-//             {"Calling", "All"},
-//             {"Reply Port", port}
-//         };
-
-//         if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) { fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port); return REFRESH_FAIL; }
-        
-//         serverListen(port, listen_timeout, [&](Client client) {
-//             std::string incoming;
-//             char buffer[1024];
-//             ssize_t valread;
-
-//             struct timeval recv_timeout = {5, 0};
-//             setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
-
-//             while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
-
-//             try {
-//                 json incomingJson = json::parse(incoming);
-//                 if (!incomingJson.contains("DeviceIQ")) return;
-
-//                 const auto& dev = incomingJson["DeviceIQ"];
-//                 std::string mac = dev.value("MAC Address", "");
-//                 if (!mac.empty()) {
-//                     discoveredDevices[mac] = dev;
-//                 }
-//             } catch (...) {
-                
-//             }
-//         }, 0);
-
-//         int updatedCount = 0;
-//         for (auto& [mac, existing] : Configuration["Managed Devices"].items()) {
-//             if (discoveredDevices.count(mac)) {
-//                 fprintf(stdout, "%s OK\r\n", mac.c_str());
-//                 const auto& dev = discoveredDevices[mac];
-
-//                 Configuration["Managed Devices"][mac] = {
-//                     {"Product Name", dev.value("Product Name", "")},
-//                     {"Hardware Model", dev.value("Hardware Model", "")},
-//                     {"Device Name", dev.value("Device Name", "")},
-//                     {"Version", dev.value("Version", "")},
-//                     {"Hostname", dev.value("Hostname", "")},
-//                     {"MAC Address", dev.value("MAC Address", "")},
-//                     {"IP Address", dev.value("IP Address", "")},
-//                     {"Last Update", CurrentDateTime()}
-//                 };
-
-//                 updatedCount++;
-//             } else {
-//                 fprintf(stdout, "%s FAIL\r\n", mac.c_str());
-//             }
-//         }
-
-//         fprintf(stdout, "\r\n");
-//         if (updatedCount > 0) {
-//             if (!SaveConfiguration()) return REFRESH_FAIL;
-//             return (updatedCount == Configuration["Managed Devices"].size()) ? REFRESH_SUCCESS : REFRESH_PARTIAL;
-//         } else {
-//             return REFRESH_FAIL;
-//         }
-//     }
-
-//     enum target_type { target_ip, target_mac };
-//     target_type t;
+//     std::string ip, mac;
 
 //     if (target.find(':') != std::string::npos) {
-//         t = target_mac;
-//         if (!Configuration.contains("Managed Devices") ||
-//             !Configuration["Managed Devices"].is_object() ||
-//             !Configuration["Managed Devices"].contains(target)) {
-//             return NOTMANAGED;
-//         }
+//         mac = target;
+//         ip = queryIPAddress(target.c_str());
 //     } else if (target.find('.') != std::string::npos) {
-//         t = target_ip;
+//         ip = target;
+//         mac = queryMACAddress(target.c_str());
 //     } else {
-//         return REFRESH_FAIL;
+//         return PULLING_FAIL;
 //     }
 
-//     json discoveryRequest = {
+//     json JsonReply = {
 //         {"Provider", "Orchestrator"},
-//         {"Request", "Discover"},
+//         {"Request", "Pull"},
+//         {"MAC Address", mac},
 //         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
 //         {"Calling", "All"},
 //         {"Reply Port", port}
 //     };
 
-//     json matchedDevice;
-//     std::string matched_mac;
-//     OperationResult result = REFRESH_FAIL;
-
-//     if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) {
-//         fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port);
-//         return REFRESH_FAIL;
+//     if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
+//         fprintf(stderr, "Error sending config pulling call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
+//         return PULLING_FAIL;
 //     }
+
+//     OperationResult result = PULLING_FAIL;
 
 //     serverListen(port, listen_timeout, [&](Client client) {
 //         std::string incoming;
-//         char buffer[DEF_BUFFERSIZE];
+//         char buffer[10240];
 //         ssize_t valread;
 
-//         struct timeval recv_timeout = {5, 0};
+//         struct timeval recv_timeout = {listen_timeout, 0};
 //         setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
 
 //         while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
 
+//         if (incoming.empty()) { result = PULLING_FAIL; return; }
+
 //         try {
-//             json incomingJson = json::parse(incoming);
-//             if (!incomingJson.contains("DeviceIQ")) return;
+//             json JsonIncoming = json::parse(incoming);
+//             std::string mac = JsonIncoming["Network"]["MAC Address"];
 
-//             const auto& dev = incomingJson["DeviceIQ"];
-//             std::string ip = dev.value("IP Address", "");
-//             std::string mac = dev.value("MAC Address", "");
+//             fprintf(stdout, "\r\n%s OK\r\n\r\n", mac.c_str());
 
-//             if ((t == target_mac && mac == target) || (t == target_ip && ip == target)) {
-//                 matchedDevice = dev;
-//                 matched_mac = mac;
-//                 result = REFRESH_SUCCESS;
-//             }
-//         } catch (...) {
-            
+//             mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
+//             std::string filename = mac + ".json";
+
+//             // Save to file with indentation
+//             std::ofstream ofs(filename);
+//             ofs << JsonIncoming.dump(4);  // Indented for readability
+//             ofs.close();
+
+//             result = PULLING_SUCCESS;
+//         } catch (const std::exception& e) {
+//             result = PULLING_FAIL;
 //         }
-//     }, 0);
-
-//     if (result == REFRESH_SUCCESS) {
-//         fprintf(stdout, "%s OK\r\n\r\n", matched_mac.c_str());
-
-//         Configuration["Managed Devices"][matched_mac] = {
-//             {"Product Name", matchedDevice.value("Product Name", "")},
-//             {"Hardware Model", matchedDevice.value("Hardware Model", "")},
-//             {"Device Name", matchedDevice.value("Device Name", "")},
-//             {"Version", matchedDevice.value("Version", "")},
-//             {"Hostname", matchedDevice.value("Hostname", "")},
-//             {"MAC Address", matchedDevice.value("MAC Address", "")},
-//             {"IP Address", matchedDevice.value("IP Address", "")},
-//             {"Last Update", CurrentDateTime()}
-//         };
-
-//         result = SaveConfiguration() ? REFRESH_SUCCESS : REFRESH_FAIL;
-//     } else {
-//         fprintf(stdout, "%s FAIL\r\n\r\n", queryMACAddress(target.c_str()).c_str());
-//     }
+//     }, 10240);
 
 //     return result;
 // }
-
-OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_timeout) {
-    if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
-        return NOTMANAGED;
-
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    std::string ip, mac;
-
-    if (target.find(':') != std::string::npos) {
-        mac = target;
-        ip = queryIPAddress(target.c_str());
-    } else if (target.find('.') != std::string::npos) {
-        ip = target;
-        mac = queryMACAddress(target.c_str());
-    } else {
-        return PULLING_FAIL;
-    }
-
-    json JsonReply = {
-        {"Provider", "Orchestrator"},
-        {"Request", "Pull"},
-        {"MAC Address", mac},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-        {"Calling", "All"},
-        {"Reply Port", port}
-    };
-
-    if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
-        fprintf(stderr, "Error sending config pulling call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
-        return PULLING_FAIL;
-    }
-
-    OperationResult result = PULLING_FAIL;
-
-    serverListen(port, listen_timeout, [&](Client client) {
-        std::string incoming;
-        char buffer[10240];
-        ssize_t valread;
-
-        struct timeval recv_timeout = {listen_timeout, 0};
-        setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
-
-        while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
-
-        if (incoming.empty()) { result = PULLING_FAIL; return; }
-
-        try {
-            json JsonIncoming = json::parse(incoming);
-            std::string mac = JsonIncoming["Network"]["MAC Address"];
-
-            fprintf(stdout, "\r\n%s OK\r\n\r\n", mac.c_str());
-
-            mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
-            std::string filename = mac + ".json";
-
-            // Save to file with indentation
-            std::ofstream ofs(filename);
-            ofs << JsonIncoming.dump(4);  // Indented for readability
-            ofs.close();
-
-            result = PULLING_SUCCESS;
-        } catch (const std::exception& e) {
-            result = PULLING_FAIL;
-        }
-    }, 10240);
-
-    return result;
-}
 
 OperationResult Orchestrator::Push(std::string target, const uint16_t listen_timeout, const bool apply) {
     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
@@ -947,6 +788,23 @@ bool Orchestrator::SaveConfiguration() {
     if (!outFile.is_open()) return false;
 
     outFile << Configuration.dump(4);
+    outFile.close();
+
+    return !outFile.fail();
+}
+
+bool Orchestrator::SaveDeviceConfiguration(const json &config) {
+    std::string mac = config["Network"]["MAC Address"].get<std::string>();
+    mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
+
+    std::string config_file = "./config/" + mac + ".json";
+
+    filesystem::create_directories("./config");
+
+    std::ofstream outFile(config_file);
+    if (!outFile.is_open()) return false;
+
+    outFile << config.dump(4);
     outFile.close();
 
     return !outFile.fail();
@@ -1295,6 +1153,9 @@ int Orchestrator::Manage() {
                 }
 
                 OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
+
+                // fprintf(stdout, "\r\n\r\n%s\r\n\r\n", incoming.c_str());
+
                 client->IncomingBuffer(incoming);
 
                 if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
@@ -1360,6 +1221,30 @@ int Orchestrator::Manage() {
                             {"Result", "Ok"},
                             {"Timestamp", CurrentDateTime()}
                         };
+
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
+
+                    if (Command == "Pull") {
+                        const json &Parameter = client->IncomingJSON()["Parameter"];
+                        if (SaveDeviceConfiguration(Parameter)) {
+                            JsonReply = {
+                                {"Provider", Version.ProductName},
+                                {"Result", "Ok"},
+                                {"Timestamp", CurrentDateTime()}
+                            };
+
+                            ServerLog->Write("Configuration device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfuly", LOGLEVEL_INFO);
+                        } else {
+                                JsonReply = {
+                                {"Provider", Version.ProductName},
+                                {"Result", "Fail"},
+                                {"Timestamp", CurrentDateTime()}
+                            };
+
+                            ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " configuration", LOGLEVEL_ERROR);
+                        }
 
                         client->OutgoingBuffer(JsonReply);
                         replied = client->Reply();
@@ -1618,6 +1503,64 @@ bool Orchestrator::Refresh(const String &target) {
     auto it = device.begin();
     const std::string ip = it.value().at("IP Address").get<std::string>();
     ServerLog->Write("[Refresh] " + it.key() + " - " + ip, LOGLEVEL_INFO);
+
+    return SendToDevice(ip, JsonCommand);
+}
+
+bool Orchestrator::Pull(const String &target) {
+    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+
+    nlohmann::json JsonCommand = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<String>()},
+        {"Command", "Pull"},
+        {"Parameter", ""}
+    };
+
+    if (target.Equals("all", true) || target.Equals("managed", true)) {
+        if (!Configuration.contains("Managed Devices") || Configuration["Managed Devices"].empty()) {
+            ServerLog->Write("[Refresh] No devices managed", LOGLEVEL_WARNING);
+            return false;
+        }
+
+        size_t ok = 0, fail = 0, skipped = 0;
+
+        for (auto &kv : Configuration["Managed Devices"].items()) {
+            const std::string mac = kv.key();
+            const nlohmann::json &dev = kv.value();
+
+            if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
+                ServerLog->Write("[Refresh] " + mac + " no IP Address found", LOGLEVEL_WARNING);
+                ++skipped;
+                continue;
+            }
+
+            const std::string ip = dev["IP Address"].get<std::string>();
+            ServerLog->Write("[Refresh] " + mac + " - " + ip, LOGLEVEL_INFO);
+
+            const bool sent = SendToDevice(ip, JsonCommand);
+            if (sent) ++ok; else ++fail;
+        }
+
+        ServerLog->Write(
+            "[Refresh] Broadcast concluído: ok=" + std::to_string(ok) +
+            ", falhas=" + std::to_string(fail) +
+            ", ignorados=" + std::to_string(skipped),
+            fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO
+        );
+
+        return ok > 0;
+    }
+
+    nlohmann::json device = getDevice(target);
+    if (device.empty()) {
+        ServerLog->Write("[Pull] Target device not found: " + target, LOGLEVEL_WARNING);
+        return false;
+    }
+
+    auto it = device.begin();
+    const std::string ip = it.value().at("IP Address").get<String>();
+    ServerLog->Write("[Pull] " + it.key() + " - " + ip, LOGLEVEL_INFO);
 
     return SendToDevice(ip, JsonCommand);
 }

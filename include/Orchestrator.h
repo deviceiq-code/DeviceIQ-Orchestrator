@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
+#include <filesystem>
 #include <csignal>
 #include <sys/signalfd.h>
 #include <poll.h>
@@ -157,10 +158,11 @@ class Orchestrator {
         bool Discovery(const String &target);
         bool Restart(const String &target);
         bool Refresh(const String &target);
+        bool Pull(const String &target);
 
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
-        OperationResult Pull(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
+        // OperationResult Pull(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
         OperationResult Push(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool apply = DEF_APPLY);
 
         int Manage();
@@ -176,6 +178,8 @@ class Orchestrator {
         bool Initialize();
         bool ReadConfiguration();
         bool SaveConfiguration();
+        
+        bool SaveDeviceConfiguration(const json &cfg);
 
         json Configuration;
 };

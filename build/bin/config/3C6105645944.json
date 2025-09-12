@@ -7,7 +7,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL1_Relay",
-            "State": true
+            "State": false
         },
         {
             "Address": 27,
@@ -16,7 +16,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL2_Relay",
-            "State": true
+            "State": false
         },
         {
             "Address": 26,
@@ -69,11 +69,9 @@
         }
     ],
     "General": {
-        "Device Name": "DeviceIQ",
         "I2C Bus": false,
         "NTP Server": "pool.ntp.org",
-        "NTP Update": true,
-        "Schema": "1.0.0"
+        "NTP Update": true
     },
     "Log": {
         "Endpoint": 7,
@@ -89,24 +87,26 @@
         "User": "deviceiq"
     },
     "Network": {
-        "Connection Timeout": 15,
+        "Connection Timeout": 30,
         "DHCP Client": true,
         "DNS Servers": [
             "192.168.1.251",
             "192.168.1.250"
         ],
         "Gateway": "192.168.1.250",
-        "Hostname": "DEVIQ-OFFICE3",
+        "Hostname": "DEVIQ-LAB",
         "IP Address": "192.168.2.30",
-        "MAC Address": "D8:13:2A:7E:EE:C4",
+        "MAC Address": "3C:61:05:64:59:44",
         "Netmask": "255.255.255.0",
         "Online Checking": true,
         "Online Checking Minutes": 1,
-        "Passphrase": "!VzML$k549Gnsy3",
-        "SSID": "Genesis"
+        "Passphrase": "1921682GenesisIOT-2",
+        "SSID": "IOT-2"
     },
     "Orchestrator": {
         "Assigned": true,
+        "IP Address": "192.168.2.144",
+        "Port": 30030,
         "Server ID": "ZCZ95YJJ693UF78"
     },
     "Security": {
@@ -129,7 +129,7 @@
         "Auto Reboot": true,
         "Check Interval": 172800000,
         "Debug": false,
-        "Update Manifest": "https://server.dts-network.com:8081/update.json"
+        "Update Manifest": "https://server.dts-networ.com:8081/update.json"
     },
     "Webhooks": {
         "Enabled": true,

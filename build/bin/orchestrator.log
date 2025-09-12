@@ -1,7 +1,7 @@
-[I][2025-09-12T18:18:56.808301Z] Configuration file: ./orchestrator.json
-[I][2025-09-12T18:18:56.808669Z] Server name: Genesis
-[I][2025-09-12T18:18:56.808822Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-12T18:18:56.809227Z] Service bind to ens4
-[I][2025-09-12T18:19:08.036590Z] Orchestrator status file /var/www/html/status.json updated
-[I][2025-09-12T18:20:08.036574Z] Orchestrator status file /var/www/html/status.json updated
-[I][2025-09-12T18:21:08.036153Z] Orchestrator status file /var/www/html/status.json updated
+[I][2025-09-12T20:43:21.599157Z] Configuration file: ./orchestrator.json
+[I][2025-09-12T20:43:21.599408Z] Server name: Genesis
+[I][2025-09-12T20:43:21.599501Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-12T20:43:21.599736Z] Service bind to ens4
+[I][2025-09-12T20:43:21.599976Z] [Pull] D8:13:2A:7E:EE:C4 - 192.168.2.246
+[I][2025-09-12T20:43:21.735780Z] Configuration device DEVIQ-LAB saved successfuly
+[I][2025-09-12T20:43:21.736534Z] Request [Pull] replied to 192.168.2.246
