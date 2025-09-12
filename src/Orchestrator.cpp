@@ -1327,21 +1327,30 @@ int Orchestrator::Manage() {
                         replied = client->Reply();
                     }
 
+                    if (Command == "Restart") {
+                        if (client->IncomingJSON().value("Parameter", "") == "ACK") {
+                            ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
+                        }
+                    }
+
                     if (Command == "Discover") {
                         const json &Parameter = client->IncomingJSON()["Parameter"];
                         string r = Parameter.dump(-1);
 
-                        json Slot;
-                        if (Configuration["Managed Devices"].contains(Parameter["Hostname"]) && Configuration["Managed Devices"][Parameter["Hostname"]]["MAC Address"] == Parameter["MAC Address"]) {
-                            Configuration["Managed Devices"][Parameter["Hostname"]] = Parameter;
-                            Configuration["Managed Devices"][Parameter["Hostname"]]["Last Update"] = CurrentDateTime();
-                            Configuration["Managed Devices"][Parameter["Hostname"]].erase("Hostname");
-                            Configuration["Managed Devices"][Parameter["Hostname"]].erase("Server ID");
+                        if (Configuration["Managed Devices"].contains(Parameter["MAC Address"])) {
+                            Configuration["Managed Devices"][Parameter["MAC Address"]] = Parameter;
+                            Configuration["Managed Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
+                            Configuration["Managed Devices"][Parameter["MAC Address"]].erase("MAC Address");
+                            Configuration["Managed Devices"][Parameter["MAC Address"]].erase("Server ID");
+
+                            ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Managed Devices section", LOGLEVEL_INFO);
                         } else {
-                            Configuration["Unmanaged Devices"][Parameter["Hostname"]] = Parameter;
-                            Configuration["Unmanaged Devices"][Parameter["Hostname"]]["Last Update"] = CurrentDateTime();
-                            Configuration["Unmanaged Devices"][Parameter["Hostname"]].erase("Hostname");
-                            Configuration["Unmanaged Devices"][Parameter["Hostname"]].erase("Server ID");
+                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]] = Parameter;
+                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
+                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("MAC Address");
+                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("Server ID");
+
+                            ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Unmanaged Devices section", LOGLEVEL_INFO);
                         }
 
                         SaveConfiguration();
@@ -1356,7 +1365,7 @@ int Orchestrator::Manage() {
                         replied = client->Reply();
                     }
 
-                    if (replied) ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);                    
+                    if (replied) ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
                 } else {
                     ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
                 }
@@ -1444,11 +1453,18 @@ void Orchestrator::Discovery(const DiscoveryMode mode, const string &target) {
     }
 }
 
+#include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
+
+using json = nlohmann::json;
+using namespace std;
+
 const json Orchestrator::getDevice(const string &target) {
-    const string field =
-        (target.find('.') != string::npos) ? "IP Address" :
-        (target.find(':') != string::npos) ? "MAC Address" :
-        "__HOSTNAME__";
+    enum class Mode { ByIP, ByMAC, ByHostname };
+    Mode mode = (target.find('.') != string::npos) ? Mode::ByIP
+              : (target.find(':') != string::npos) ? Mode::ByMAC
+              : Mode::ByHostname;
 
     const vector<string> sections = { "Managed Devices", "Unmanaged Devices" };
 
@@ -1458,20 +1474,36 @@ const json Orchestrator::getDevice(const string &target) {
         }
 
         for (auto it = Configuration[section].begin(); it != Configuration[section].end(); ++it) {
-            if (field == "__HOSTNAME__") {
-                if (it.key() == target) {
-                    json device = it.value();
-                    device["Where"] = section;
-                    return json{{it.key(), device}};
-                }
-            } else {
-                if (it.value().contains(field) && it.value()[field].is_string()) {
-                    if (it.value()[field].get<string>() == target) {
-                        json device = it.value();
-                        device["Where"] = section;
-                        return json{{it.key(), device}};
+            const string mac_key = it.key();
+            const json& obj = it.value();
+
+            bool match = false;
+            switch (mode) {
+                case Mode::ByIP:
+                    if (obj.contains("IP Address") && obj["IP Address"].is_string())
+                        match = (obj["IP Address"].get<string>() == target);
+                    break;
+
+                case Mode::ByMAC: {
+                    if (mac_key == target) {
+                        match = true;
+                    } else if (obj.contains("MAC Address") && obj["MAC Address"].is_string()) {
+                        match = (obj["MAC Address"].get<string>() == target);
                     }
+                    break;
                 }
+
+                case Mode::ByHostname:
+                    if (obj.contains("Hostname") && obj["Hostname"].is_string())
+                        match = (obj["Hostname"].get<string>() == target);
+                    break;
+            }
+
+            if (match) {
+                json device = obj;
+                device["Where"] = section;
+                if (!device.contains("MAC Address") || !device["MAC Address"].is_string()) device["MAC Address"] = mac_key;
+                return json{{mac_key, device}};
             }
         }
     }
@@ -1492,6 +1524,8 @@ bool Orchestrator::Restart(const string &target) {
 
     json device = getDevice(target);
 
+    fprintf(stdout, "--- %s\r\n", device.dump(-1).c_str());
+
     if (device.empty()) { 
         return false; // not found
     } else {
@@ -1503,49 +1537,3 @@ bool Orchestrator::Restart(const string &target) {
 
     return true;
 }
-
-// bool Orchestrator::Restart(std::string target) {
-//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-
-//     std::string ip_address, mac_address;
-
-//     if (target.find(':') != std::string::npos) {
-//         mac_address = target;
-//         ip_address = queryIPAddress(target.c_str());
-//     } else if (target.find('.') != std::string::npos) {
-//         mac_address = queryMACAddress(target.c_str());
-//         ip_address = target;
-//     } else {
-//         return false;
-//     }
-
-//     if (Configuration.contains("Managed Devices") && Configuration["Managed Devices"].is_object()) {
-//         const auto& managedDevices = Configuration["Managed Devices"];
-//         if (managedDevices.size() == 0) {
-//             fprintf(stderr, "No devices managed by this Orchestrator.\r\n\r\n");
-//             exit(1);
-//         } else {
-//             if (managedDevices.contains(mac_address)) {
-//                 json JsonReply;
-        
-//                 JsonReply["Provider"] = "Orchestrator";
-//                 JsonReply["Request"] = "Restart";
-//                 JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
-//                 JsonReply["MAC Address"] = mac_address;
-
-//                 if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
-//                     fprintf(stdout, "Sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-//                     return true;
-//                 } else {
-//                     fprintf(stderr, "Error sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-//                     exit(1);
-//                 }
-//             } else {
-//                 fprintf(stderr, "Device %s is not managed by this Orchestrator.\r\n\r\n", mac_address.c_str());
-//                 exit(1);
-//             }
-//         }
-//     }
-
-//     return false;
-// }

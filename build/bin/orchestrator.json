@@ -1,6 +1,6 @@
 {
     "Configuration": {
-        "Bind": "ens3",
+        "Bind": "ens4",
         "Buffer Size": 1024,
         "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
         "Log File Append": false,
@@ -18,15 +18,15 @@
         "Token": "token_test"
     },
     "Managed Devices": {
-        "DEVIQ-OFFICE3": {
+        "D8:13:2A:7E:EE:C4": {
             "Hardware Model": "ESP32-WROOM",
-            "IP Address": "192.168.1.107",
-            "Last Update": "2025-09-11T00:02:54.145448Z",
-            "MAC Address": "D8:13:2A:7E:EE:C4",
+            "Hostname": "DEVIQ-LAB",
+            "IP Address": "192.168.2.246",
+            "Last Update": "2025-09-12T15:17:14.656810Z",
+            "Local Timestamp": "2025-09-12T12:17:13.967036Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         }
     },
-    "Unmanaged Devices": {
-    }
+    "Unmanaged Devices": {}
 }
