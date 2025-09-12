@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
             ServerOrchestrator->List();
         } break;
         case ACTION_DISCOVERY : {
-            ServerOrchestrator->Discovery(Mode, TargetDevice);
+            ServerOrchestrator->Discovery(TargetDevice);
         } break;
         case ACTION_ADD : {
             if (TargetDevice.find("255") != string::npos) {
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
             fprintf(stdout, "Finish restarting. %u\r\n\r\n", r);
         } break;
         case ACTION_REFRESH : {
-            OperationResult r = ServerOrchestrator->Refresh(TargetDevice.c_str(), 15);
+            bool r = ServerOrchestrator->Refresh(TargetDevice);
             fprintf(stdout, "Finish refreshing.\r\n\r\n");
         } break;
         case ACTION_PULL : {

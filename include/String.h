@@ -18,8 +18,8 @@ class String : public std::string {
         String(std::string str, size_t sz);
         String(const char* str, size_t sz);
 
-        inline bool Equals(const char* str) { return *this == String(str); }
-        inline bool Equals(const String str) { return *this == str; }
+        bool Equals(const char* str, bool ignorecase = false) const;
+        bool Equals(const String, bool ignorecase = false) const;
         std::string LimitString(size_t sz, bool fill = false);
         std::string LowerCase();
         std::string UpperCase();

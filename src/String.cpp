@@ -1,5 +1,45 @@
 #include "../include/String.h"
 
+bool String::Equals(const char* str, bool ignorecase) const {
+    if (!str) return false;
+
+    if (ignorecase) {
+        const char* a = this->c_str();
+        const char* b = str;
+
+        while (*a && *b) {
+            if (std::tolower(static_cast<unsigned char>(*a)) !=
+                std::tolower(static_cast<unsigned char>(*b))) {
+                return false;
+            }
+            ++a;
+            ++b;
+        }
+        return *a == *b;
+    }
+
+    return *this == String(str);
+}
+
+bool String::Equals(const String other, bool ignorecase) const {
+    if (ignorecase) {
+        const char* a = this->c_str();
+        const char* b = other.c_str();
+
+        while (*a && *b) {
+            if (std::tolower(static_cast<unsigned char>(*a)) !=
+                std::tolower(static_cast<unsigned char>(*b))) {
+                return false;
+            }
+            ++a;
+            ++b;
+        }
+        return *a == *b;
+    }
+
+    return *this == other;
+}
+
 std::string String::LowerCase() {
     std::string source = *this;
     std::transform(source.begin(), source.end(), source.begin(), [](unsigned char c) { return std::tolower(c); });

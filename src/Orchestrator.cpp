@@ -482,164 +482,164 @@ OperationResult Orchestrator::Remove(std::string target, const uint16_t listen_t
     return result;
 }
 
-OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_timeout) {
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    fprintf(stdout, "\r\n");
+// OperationResult Orchestrator::Refresh(std::string target, const uint16_t listen_timeout) {
+//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+//     fprintf(stdout, "\r\n");
 
-    if ((target == "all") || (target == "255.255.255.255")) {
-        if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object()) 
-            return NOTMANAGED;
+//     if ((target == "all") || (target == "255.255.255.255")) {
+//         if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object()) 
+//             return NOTMANAGED;
 
-        std::map<std::string, json> discoveredDevices;
+//         std::map<std::string, json> discoveredDevices;
 
-        json discoveryRequest = {
-            {"Provider", "Orchestrator"},
-            {"Request", "Discover"},
-            {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-            {"Calling", "All"},
-            {"Reply Port", port}
-        };
+//         json discoveryRequest = {
+//             {"Provider", "Orchestrator"},
+//             {"Request", "Discover"},
+//             {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+//             {"Calling", "All"},
+//             {"Reply Port", port}
+//         };
 
-        if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) { fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port); return REFRESH_FAIL; }
+//         if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) { fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port); return REFRESH_FAIL; }
         
-        serverListen(port, listen_timeout, [&](Client client) {
-            std::string incoming;
-            char buffer[1024];
-            ssize_t valread;
+//         serverListen(port, listen_timeout, [&](Client client) {
+//             std::string incoming;
+//             char buffer[1024];
+//             ssize_t valread;
 
-            struct timeval recv_timeout = {5, 0};
-            setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
+//             struct timeval recv_timeout = {5, 0};
+//             setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
 
-            while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
+//             while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
 
-            try {
-                json incomingJson = json::parse(incoming);
-                if (!incomingJson.contains("DeviceIQ")) return;
+//             try {
+//                 json incomingJson = json::parse(incoming);
+//                 if (!incomingJson.contains("DeviceIQ")) return;
 
-                const auto& dev = incomingJson["DeviceIQ"];
-                std::string mac = dev.value("MAC Address", "");
-                if (!mac.empty()) {
-                    discoveredDevices[mac] = dev;
-                }
-            } catch (...) {
+//                 const auto& dev = incomingJson["DeviceIQ"];
+//                 std::string mac = dev.value("MAC Address", "");
+//                 if (!mac.empty()) {
+//                     discoveredDevices[mac] = dev;
+//                 }
+//             } catch (...) {
                 
-            }
-        }, 0);
+//             }
+//         }, 0);
 
-        int updatedCount = 0;
-        for (auto& [mac, existing] : Configuration["Managed Devices"].items()) {
-            if (discoveredDevices.count(mac)) {
-                fprintf(stdout, "%s OK\r\n", mac.c_str());
-                const auto& dev = discoveredDevices[mac];
+//         int updatedCount = 0;
+//         for (auto& [mac, existing] : Configuration["Managed Devices"].items()) {
+//             if (discoveredDevices.count(mac)) {
+//                 fprintf(stdout, "%s OK\r\n", mac.c_str());
+//                 const auto& dev = discoveredDevices[mac];
 
-                Configuration["Managed Devices"][mac] = {
-                    {"Product Name", dev.value("Product Name", "")},
-                    {"Hardware Model", dev.value("Hardware Model", "")},
-                    {"Device Name", dev.value("Device Name", "")},
-                    {"Version", dev.value("Version", "")},
-                    {"Hostname", dev.value("Hostname", "")},
-                    {"MAC Address", dev.value("MAC Address", "")},
-                    {"IP Address", dev.value("IP Address", "")},
-                    {"Last Update", CurrentDateTime()}
-                };
+//                 Configuration["Managed Devices"][mac] = {
+//                     {"Product Name", dev.value("Product Name", "")},
+//                     {"Hardware Model", dev.value("Hardware Model", "")},
+//                     {"Device Name", dev.value("Device Name", "")},
+//                     {"Version", dev.value("Version", "")},
+//                     {"Hostname", dev.value("Hostname", "")},
+//                     {"MAC Address", dev.value("MAC Address", "")},
+//                     {"IP Address", dev.value("IP Address", "")},
+//                     {"Last Update", CurrentDateTime()}
+//                 };
 
-                updatedCount++;
-            } else {
-                fprintf(stdout, "%s FAIL\r\n", mac.c_str());
-            }
-        }
+//                 updatedCount++;
+//             } else {
+//                 fprintf(stdout, "%s FAIL\r\n", mac.c_str());
+//             }
+//         }
 
-        fprintf(stdout, "\r\n");
-        if (updatedCount > 0) {
-            if (!SaveConfiguration()) return REFRESH_FAIL;
-            return (updatedCount == Configuration["Managed Devices"].size()) ? REFRESH_SUCCESS : REFRESH_PARTIAL;
-        } else {
-            return REFRESH_FAIL;
-        }
-    }
+//         fprintf(stdout, "\r\n");
+//         if (updatedCount > 0) {
+//             if (!SaveConfiguration()) return REFRESH_FAIL;
+//             return (updatedCount == Configuration["Managed Devices"].size()) ? REFRESH_SUCCESS : REFRESH_PARTIAL;
+//         } else {
+//             return REFRESH_FAIL;
+//         }
+//     }
 
-    enum target_type { target_ip, target_mac };
-    target_type t;
+//     enum target_type { target_ip, target_mac };
+//     target_type t;
 
-    if (target.find(':') != std::string::npos) {
-        t = target_mac;
-        if (!Configuration.contains("Managed Devices") ||
-            !Configuration["Managed Devices"].is_object() ||
-            !Configuration["Managed Devices"].contains(target)) {
-            return NOTMANAGED;
-        }
-    } else if (target.find('.') != std::string::npos) {
-        t = target_ip;
-    } else {
-        return REFRESH_FAIL;
-    }
+//     if (target.find(':') != std::string::npos) {
+//         t = target_mac;
+//         if (!Configuration.contains("Managed Devices") ||
+//             !Configuration["Managed Devices"].is_object() ||
+//             !Configuration["Managed Devices"].contains(target)) {
+//             return NOTMANAGED;
+//         }
+//     } else if (target.find('.') != std::string::npos) {
+//         t = target_ip;
+//     } else {
+//         return REFRESH_FAIL;
+//     }
 
-    json discoveryRequest = {
-        {"Provider", "Orchestrator"},
-        {"Request", "Discover"},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-        {"Calling", "All"},
-        {"Reply Port", port}
-    };
+//     json discoveryRequest = {
+//         {"Provider", "Orchestrator"},
+//         {"Request", "Discover"},
+//         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+//         {"Calling", "All"},
+//         {"Reply Port", port}
+//     };
 
-    json matchedDevice;
-    std::string matched_mac;
-    OperationResult result = REFRESH_FAIL;
+//     json matchedDevice;
+//     std::string matched_mac;
+//     OperationResult result = REFRESH_FAIL;
 
-    if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) {
-        fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port);
-        return REFRESH_FAIL;
-    }
+//     if (!sendMessage(discoveryRequest.dump(), port, DEF_BROADCASTADDRESS)) {
+//         fprintf(stderr, "Error sending discovery call - UDP (%s:%d).\r\n\r\n", DEF_BROADCASTADDRESS, port);
+//         return REFRESH_FAIL;
+//     }
 
-    serverListen(port, listen_timeout, [&](Client client) {
-        std::string incoming;
-        char buffer[DEF_BUFFERSIZE];
-        ssize_t valread;
+//     serverListen(port, listen_timeout, [&](Client client) {
+//         std::string incoming;
+//         char buffer[DEF_BUFFERSIZE];
+//         ssize_t valread;
 
-        struct timeval recv_timeout = {5, 0};
-        setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
+//         struct timeval recv_timeout = {5, 0};
+//         setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
 
-        while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
+//         while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
 
-        try {
-            json incomingJson = json::parse(incoming);
-            if (!incomingJson.contains("DeviceIQ")) return;
+//         try {
+//             json incomingJson = json::parse(incoming);
+//             if (!incomingJson.contains("DeviceIQ")) return;
 
-            const auto& dev = incomingJson["DeviceIQ"];
-            std::string ip = dev.value("IP Address", "");
-            std::string mac = dev.value("MAC Address", "");
+//             const auto& dev = incomingJson["DeviceIQ"];
+//             std::string ip = dev.value("IP Address", "");
+//             std::string mac = dev.value("MAC Address", "");
 
-            if ((t == target_mac && mac == target) || (t == target_ip && ip == target)) {
-                matchedDevice = dev;
-                matched_mac = mac;
-                result = REFRESH_SUCCESS;
-            }
-        } catch (...) {
+//             if ((t == target_mac && mac == target) || (t == target_ip && ip == target)) {
+//                 matchedDevice = dev;
+//                 matched_mac = mac;
+//                 result = REFRESH_SUCCESS;
+//             }
+//         } catch (...) {
             
-        }
-    }, 0);
+//         }
+//     }, 0);
 
-    if (result == REFRESH_SUCCESS) {
-        fprintf(stdout, "%s OK\r\n\r\n", matched_mac.c_str());
+//     if (result == REFRESH_SUCCESS) {
+//         fprintf(stdout, "%s OK\r\n\r\n", matched_mac.c_str());
 
-        Configuration["Managed Devices"][matched_mac] = {
-            {"Product Name", matchedDevice.value("Product Name", "")},
-            {"Hardware Model", matchedDevice.value("Hardware Model", "")},
-            {"Device Name", matchedDevice.value("Device Name", "")},
-            {"Version", matchedDevice.value("Version", "")},
-            {"Hostname", matchedDevice.value("Hostname", "")},
-            {"MAC Address", matchedDevice.value("MAC Address", "")},
-            {"IP Address", matchedDevice.value("IP Address", "")},
-            {"Last Update", CurrentDateTime()}
-        };
+//         Configuration["Managed Devices"][matched_mac] = {
+//             {"Product Name", matchedDevice.value("Product Name", "")},
+//             {"Hardware Model", matchedDevice.value("Hardware Model", "")},
+//             {"Device Name", matchedDevice.value("Device Name", "")},
+//             {"Version", matchedDevice.value("Version", "")},
+//             {"Hostname", matchedDevice.value("Hostname", "")},
+//             {"MAC Address", matchedDevice.value("MAC Address", "")},
+//             {"IP Address", matchedDevice.value("IP Address", "")},
+//             {"Last Update", CurrentDateTime()}
+//         };
 
-        result = SaveConfiguration() ? REFRESH_SUCCESS : REFRESH_FAIL;
-    } else {
-        fprintf(stdout, "%s FAIL\r\n\r\n", queryMACAddress(target.c_str()).c_str());
-    }
+//         result = SaveConfiguration() ? REFRESH_SUCCESS : REFRESH_FAIL;
+//     } else {
+//         fprintf(stdout, "%s FAIL\r\n\r\n", queryMACAddress(target.c_str()).c_str());
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
 OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_timeout) {
     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
@@ -1437,41 +1437,25 @@ bool Orchestrator::SendToDevice(const std::string& destination, const json& payl
     return true;
 }
 
-void Orchestrator::Discovery(const DiscoveryMode mode, const string &target) {
-    const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    uint16_t DiscoveredDevices = 0;
-
+bool Orchestrator::Discovery(const String &target) {
     json JsonCommand = {
         {"Provider", "Orchestrator"},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<String>()},
         {"Command", "Discover"},
-        {"Parameter", mode == DISCOVERY_ALL ? "All" : (mode == DISCOVERY_MANAGED ? "Managed" : "Unmanaged")},
+        {"Parameter", "All"},
     };
 
-    if (SendToDevice(target, JsonCommand)) {
-
-    }
+    return SendToDevice(target, JsonCommand);
 }
 
-#include <nlohmann/json.hpp>
-#include <string>
-#include <vector>
-
-using json = nlohmann::json;
-using namespace std;
-
-const json Orchestrator::getDevice(const string &target) {
+const json Orchestrator::getDevice(const String &target) {
     enum class Mode { ByIP, ByMAC, ByHostname };
-    Mode mode = (target.find('.') != string::npos) ? Mode::ByIP
-              : (target.find(':') != string::npos) ? Mode::ByMAC
-              : Mode::ByHostname;
+    Mode mode = (target.find('.') != string::npos) ? Mode::ByIP : (target.find(':') != string::npos) ? Mode::ByMAC : Mode::ByHostname;
 
     const vector<string> sections = { "Managed Devices", "Unmanaged Devices" };
 
     for (const auto &section : sections) {
-        if (!Configuration.contains(section) || !Configuration[section].is_object()) {
-            continue;
-        }
+        if (!Configuration.contains(section) || !Configuration[section].is_object()) continue;
 
         for (auto it = Configuration[section].begin(); it != Configuration[section].end(); ++it) {
             const string mac_key = it.key();
@@ -1511,29 +1495,129 @@ const json Orchestrator::getDevice(const string &target) {
     return json::object();
 }
 
-bool Orchestrator::Restart(const string &target) {
-    const uint16_t &port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    uint16_t DiscoveredDevices = 0;
+bool Orchestrator::Restart(const String &target) {
+    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
 
-    json JsonCommand = {
+    nlohmann::json JsonCommand = {
         {"Provider", "Orchestrator"},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<std::string>()},
         {"Command", "Restart"},
-        {"Parameter", ""},
+        {"Parameter", ""}
     };
 
-    json device = getDevice(target);
+    auto send_to_group = [&](const char* section, size_t& ok, size_t& fail, size_t& skipped) -> bool {
+        if (!Configuration.contains(section) || Configuration[section].empty()) {
+            ServerLog->Write(std::string("[Restart] No devices under section: ") + section, LOGLEVEL_WARNING);
+            return false;
+        }
 
-    fprintf(stdout, "--- %s\r\n", device.dump(-1).c_str());
+        for (auto &kv : Configuration[section].items()) {
+            const std::string mac = kv.key();
+            const nlohmann::json &dev = kv.value();
 
-    if (device.empty()) { 
-        return false; // not found
-    } else {
-        auto it = device.begin();
-        ServerLog->Write(it.key() + " - " + it.value().at("IP Address").get<string>(), LOGLEVEL_INFO);
+            if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
+                ServerLog->Write("[Restart] " + mac + " has no IP Address — ignored", LOGLEVEL_WARNING);
+                ++skipped;
+                continue;
+            }
 
-        return SendToDevice(it.value().at("IP Address").get<string>(), JsonCommand);
+            const std::string ip = dev["IP Address"].get<std::string>();
+            ServerLog->Write("[Restart] " + mac + " - " + ip, LOGLEVEL_INFO);
+
+            const bool sent = SendToDevice(ip, JsonCommand);
+            if (sent) ++ok; else ++fail;
+        }
+        return true;
+    };
+
+    if (target.Equals("all", true) || target.Equals("managed", true) || target.Equals("unmanaged", true)) {
+        size_t ok = 0, fail = 0, skipped = 0;
+        bool any_section = false;
+
+        if (target.Equals("all", true) || target.Equals("managed", true)) {
+            any_section |= send_to_group("Managed Devices", ok, fail, skipped);
+        }
+        if (target.Equals("all", true) || target.Equals("unmanaged", true)) {
+            any_section |= send_to_group("Unmanaged Devices", ok, fail, skipped);
+        }
+
+        if (!any_section) {
+            ServerLog->Write("[Restart] No devices found for requested group(s).", LOGLEVEL_WARNING);
+            return false;
+        }
+
+        ServerLog->Write("[Restart] Multicast finished: Sent=" + std::to_string(ok) + ", Failed=" + std::to_string(fail) + ", Ignored=" + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
+
+        return ok > 0;
     }
 
-    return true;
+    json device = getDevice(target);
+    if (device.empty()) {
+        ServerLog->Write("[Restart] Target device not found: " + string(target.c_str()), LOGLEVEL_WARNING);
+        return false;
+    }
+
+    auto it = device.begin();
+    const string ip = it.value().at("IP Address").get<string>();
+    ServerLog->Write("[Restart] " + it.key() + " - " + ip, LOGLEVEL_INFO);
+
+    return SendToDevice(ip, JsonCommand);
+}
+
+bool Orchestrator::Refresh(const String &target) {
+    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+
+    nlohmann::json JsonCommand = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<std::string>()},
+        {"Command", "Refresh"},
+        {"Parameter", ""}
+    };
+
+    if (target.Equals("all", true) || target.Equals("managed", true)) {
+        if (!Configuration.contains("Managed Devices") || Configuration["Managed Devices"].empty()) {
+            ServerLog->Write("[Refresh] No devices managed", LOGLEVEL_WARNING);
+            return false;
+        }
+
+        size_t ok = 0, fail = 0, skipped = 0;
+
+        for (auto &kv : Configuration["Managed Devices"].items()) {
+            const std::string mac = kv.key();
+            const nlohmann::json &dev = kv.value();
+
+            if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
+                ServerLog->Write("[Refresh] " + mac + " no IP Address found", LOGLEVEL_WARNING);
+                ++skipped;
+                continue;
+            }
+
+            const std::string ip = dev["IP Address"].get<std::string>();
+            ServerLog->Write("[Refresh] " + mac + " - " + ip, LOGLEVEL_INFO);
+
+            const bool sent = SendToDevice(ip, JsonCommand);
+            if (sent) ++ok; else ++fail;
+        }
+
+        ServerLog->Write(
+            "[Refresh] Broadcast concluído: ok=" + std::to_string(ok) +
+            ", falhas=" + std::to_string(fail) +
+            ", ignorados=" + std::to_string(skipped),
+            fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO
+        );
+
+        return ok > 0;
+    }
+
+    nlohmann::json device = getDevice(target);
+    if (device.empty()) {
+        ServerLog->Write("[Refresh] Target device not found: " + target, LOGLEVEL_WARNING);
+        return false;
+    }
+
+    auto it = device.begin();
+    const std::string ip = it.value().at("IP Address").get<std::string>();
+    ServerLog->Write("[Refresh] " + it.key() + " - " + ip, LOGLEVEL_INFO);
+
+    return SendToDevice(ip, JsonCommand);
 }

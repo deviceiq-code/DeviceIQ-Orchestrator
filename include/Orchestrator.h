@@ -135,9 +135,8 @@ class Orchestrator {
         string queryIPAddress(const char* mac_address);
         string queryMACAddress(const char* ip_address);
 
-        inline bool isManaged(const string &target) { return Configuration["Managed Devices"].contains(target); }
-
-        const json getDevice(const string &target);
+        inline bool isManaged(const String &target) { return Configuration["Managed Devices"].contains(target); }
+        const json getDevice(const String &target);
 
         void applyBindForUdpSocket(int sockfd);
         bool sendMessage(const std::string& message, const uint16_t port, const char* dest_address = DEF_BROADCASTADDRESS);
@@ -155,11 +154,12 @@ class Orchestrator {
         void UpdateStatus(bool status);
 
         void List();
-        void Discovery(const DiscoveryMode mode, const string &target = DEF_BROADCASTADDRESS);
-        bool Restart(const string &target = DEF_BROADCASTADDRESS);
+        bool Discovery(const String &target);
+        bool Restart(const String &target);
+        bool Refresh(const String &target);
+
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
-        OperationResult Refresh(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
         OperationResult Pull(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT);
         OperationResult Push(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool apply = DEF_APPLY);
 
