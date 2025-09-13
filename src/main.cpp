@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     clp.OnAction("update", []() { Action = ACTION_UPDATE; });
     clp.OnAction("restart", []() { Action = ACTION_RESTART; });
     clp.OnAction("pull", []() { Action = ACTION_PULL; });
+    clp.OnAction("getlog", []() { Action = ACTION_GETLOG; });
     clp.OnAction("push", []() { Action = ACTION_PUSH; });
     clp.OnAction("manage", []() { Action = ACTION_MANAGE; });
     clp.OnAction("checkonline", []() { Action = ACTION_CHECKONLINE; });
@@ -172,6 +173,10 @@ int main(int argc, char** argv) {
         case ACTION_PULL : {
             bool r = ServerOrchestrator->Pull(TargetDevice);
             fprintf(stdout, "Finish config pulling.\r\n\r\n");
+        } break;
+        case ACTION_GETLOG : {
+            bool r = ServerOrchestrator->GetLog(TargetDevice);
+            fprintf(stdout, "Finish log pulling.\r\n\r\n");
         } break;
         case ACTION_PUSH : {
             bool r = ServerOrchestrator->Push(TargetDevice);

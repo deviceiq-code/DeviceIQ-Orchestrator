@@ -1609,6 +1609,11 @@ bool Orchestrator::Pull(const String &target) {
     return SendToDevice(ip, JsonCommand);
 }
 
+bool Orchestrator::GetLog(const String &target) {
+    // TODO
+    return true;
+}
+
 bool Orchestrator::Push(const String &target) {
     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
 

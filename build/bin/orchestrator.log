@@ -1,9 +1,8 @@
-[I][2025-09-13T02:52:08.603437Z] Configuration file: ./orchestrator.json
-[I][2025-09-13T02:52:08.603583Z] Server name: Genesis
-[I][2025-09-13T02:52:08.603633Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-13T02:52:08.603811Z] Service bind to ens4
-[I][2025-09-13T02:52:08.603985Z] [Push] D8:13:2A:7E:EE:C4 - 192.168.2.246
-[I][2025-09-13T02:52:10.194470Z] Request [Push] replied to 192.168.2.246
-[I][2025-09-13T02:52:17.167221Z] Device [DEVIQ-LAB] sent ACK to restart
-[I][2025-09-13T02:52:18.477373Z] DEVIQ-LAB information saved on Managed Devices section
-[I][2025-09-13T02:52:18.477717Z] Request [Discover] replied to 192.168.2.246
+[I][2025-09-13T02:57:02.460457Z] Configuration file: ./orchestrator.json
+[I][2025-09-13T02:57:02.460610Z] Server name: Genesis
+[I][2025-09-13T02:57:02.460669Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-13T02:57:02.460852Z] Service bind to ens4
+[I][2025-09-13T02:57:02.460994Z] [Pull] D8:13:2A:7E:EE:C4 - 192.168.2.246
+[I][2025-09-13T02:57:02.636844Z] Configuration device DEVIQ-LAB saved successfully
+[I][2025-09-13T02:57:02.637062Z] Request [Pull] replied to 192.168.2.246
+[I][2025-09-13T02:58:16.075074Z] Orchestrator status file /var/www/html/status.json updated

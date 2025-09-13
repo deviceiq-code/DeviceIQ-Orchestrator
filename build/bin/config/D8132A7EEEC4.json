@@ -1,13 +1,22 @@
 {
     "Components": [
         {
+            "Address": 14,
+            "Bus": "Onboard",
+            "Class": "Relay",
+            "Enabled": true,
+            "Events": {},
+            "Name": "OL1_Relay",
+            "State": true
+        },
+        {
             "Address": 27,
             "Bus": "Onboard",
             "Class": "Relay",
             "Enabled": true,
             "Events": {},
             "Name": "OL2_Relay",
-            "State": false
+            "State": true
         },
         {
             "Address": 26,
