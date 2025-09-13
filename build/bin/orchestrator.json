@@ -1,6 +1,6 @@
 {
     "Configuration": {
-        "Bind": "ens4",
+        "Bind": "ens3",
         "Buffer Size": 1024,
         "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
         "Log File Append": false,
@@ -31,8 +31,8 @@
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-LAB",
             "IP Address": "192.168.2.246",
-            "Last Update": "2025-09-13T02:56:17.514531Z",
-            "Local Timestamp": "2025-09-12T23:56:17.794760Z",
+            "Last Update": "2025-09-13T18:46:36.170203Z",
+            "Local Timestamp": "2025-09-13T15:46:35.656433Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         }

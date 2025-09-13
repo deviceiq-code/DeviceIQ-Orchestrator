@@ -494,230 +494,73 @@ OperationResult Orchestrator::Remove(std::string target, const uint16_t listen_t
     return result;
 }
 
-// OperationResult Orchestrator::Pull(std::string target, const uint16_t listen_timeout) {
-//     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
-//         return NOTMANAGED;
+bool Orchestrator::Update(const String &target) {
+        const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
 
-//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-//     std::string ip, mac;
+    nlohmann::json JsonCommand = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<std::string>()},
+        {"Command", "Update"},
+        {"Parameter", ""}
+    };
 
-//     if (target.find(':') != std::string::npos) {
-//         mac = target;
-//         ip = queryIPAddress(target.c_str());
-//     } else if (target.find('.') != std::string::npos) {
-//         ip = target;
-//         mac = queryMACAddress(target.c_str());
-//     } else {
-//         return PULLING_FAIL;
-//     }
+    auto send_to_group = [&](const char* section, size_t& ok, size_t& fail, size_t& skipped) -> bool {
+        if (!Configuration.contains(section) || Configuration[section].empty()) {
+            ServerLog->Write(std::string("[Update] No devices under section: ") + section, LOGLEVEL_WARNING);
+            return false;
+        }
 
-//     json JsonReply = {
-//         {"Provider", "Orchestrator"},
-//         {"Request", "Pull"},
-//         {"MAC Address", mac},
-//         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-//         {"Calling", "All"},
-//         {"Reply Port", port}
-//     };
+        for (auto &kv : Configuration[section].items()) {
+            const std::string mac = kv.key();
+            const nlohmann::json &dev = kv.value();
 
-//     if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
-//         fprintf(stderr, "Error sending config pulling call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
-//         return PULLING_FAIL;
-//     }
+            if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
+                ServerLog->Write("[Update] " + mac + " has no IP Address — ignored", LOGLEVEL_WARNING);
+                ++skipped;
+                continue;
+            }
 
-//     OperationResult result = PULLING_FAIL;
+            const std::string ip = dev["IP Address"].get<std::string>();
+            ServerLog->Write("[Update] " + mac + " - " + ip, LOGLEVEL_INFO);
 
-//     serverListen(port, listen_timeout, [&](Client client) {
-//         std::string incoming;
-//         char buffer[10240];
-//         ssize_t valread;
+            const bool sent = SendToDevice(ip, JsonCommand);
+            if (sent) ++ok; else ++fail;
+        }
+        return true;
+    };
 
-//         struct timeval recv_timeout = {listen_timeout, 0};
-//         setsockopt(client.ID, SOL_SOCKET, SO_RCVTIMEO, (const char*)&recv_timeout, sizeof(recv_timeout));
+    if (target.Equals("all", true) || target.Equals("managed", true) || target.Equals("unmanaged", true)) {
+        size_t ok = 0, fail = 0, skipped = 0;
+        bool any_section = false;
 
-//         while ((valread = recv(client.ID, buffer, sizeof(buffer), 0)) > 0) { incoming.append(buffer, valread); }
+        if (target.Equals("all", true) || target.Equals("managed", true)) {
+            any_section |= send_to_group("Managed Devices", ok, fail, skipped);
+        }
+        if (target.Equals("all", true) || target.Equals("unmanaged", true)) {
+            any_section |= send_to_group("Unmanaged Devices", ok, fail, skipped);
+        }
 
-//         if (incoming.empty()) { result = PULLING_FAIL; return; }
+        if (!any_section) {
+            ServerLog->Write("[Update] No devices found for requested group(s).", LOGLEVEL_WARNING);
+            return false;
+        }
 
-//         try {
-//             json JsonIncoming = json::parse(incoming);
-//             std::string mac = JsonIncoming["Network"]["MAC Address"];
+        ServerLog->Write("[Update] Multicast finished: Sent = " + std::to_string(ok) + ", Failed = " + std::to_string(fail) + ", Ignored = " + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
 
-//             fprintf(stdout, "\r\n%s OK\r\n\r\n", mac.c_str());
+        return ok > 0;
+    }
 
-//             mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
-//             std::string filename = mac + ".json";
-
-//             // Save to file with indentation
-//             std::ofstream ofs(filename);
-//             ofs << JsonIncoming.dump(4);  // Indented for readability
-//             ofs.close();
-
-//             result = PULLING_SUCCESS;
-//         } catch (const std::exception& e) {
-//             result = PULLING_FAIL;
-//         }
-//     }, 10240);
-
-//     return result;
-// }
-
-// OperationResult Orchestrator::Push(std::string target, const uint16_t listen_timeout, const bool apply) {
-//     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
-//         return NOTMANAGED;
-
-//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-//     std::string ip, mac;
-
-//     if (target.find(':') != std::string::npos) {
-//         mac = target;
-//         ip = queryIPAddress(target.c_str());
-//     } else if (target.find('.') != std::string::npos) {
-//         ip = target;
-//         mac = queryMACAddress(target.c_str());
-//     } else {
-//         return PUSHING_FAIL;
-//     }
-
-//     // Load config file
-//     std::string config_filename = mac;
-//     config_filename.erase(std::remove(config_filename.begin(), config_filename.end(), ':'), config_filename.end());
-//     config_filename += ".json";
-
-//     std::ifstream ifs(config_filename);
-//     if (!ifs.is_open()) {
-//         fprintf(stderr, "[Push] Config file %s not found\n", config_filename.c_str());
-//         return NOTMANAGED;
-//     }
-
-//     std::stringstream buffer;
-//     buffer << ifs.rdbuf();
-//     std::string config_json_pretty = buffer.str();  // JSON identado (para leitura)
-//     ifs.close();
-
-//     // Compacta o JSON antes de enviar
-//     json parsed;
-//     try {
-//         parsed = json::parse(config_json_pretty);
-//     } catch (const std::exception& e) {
-//         fprintf(stderr, "[Push] Failed to parse saved config: %s\n", e.what());
-//         return PUSHING_FAIL;
-//     }
-
-//     std::string config_json = parsed.dump();  // Sem identação
-
-//     OperationResult result = PUSHING_FAIL;
-
-//     std::thread tcpListenerThread([&]() {
-//         fprintf(stdout, "[Push] Binding Listen() now... (Port %d)\n", port);
-//         serverListen(port, listen_timeout, [&](Client client) {
-//             fprintf(stdout, "[Push] Listen triggered!\n");
-
-//             std::string client_ip = inet_ntoa(client.Info.sin_addr);
-//             uint16_t client_port = ntohs(client.Info.sin_port);
-//             fprintf(stdout, "[Push] Accepted TCP connection from %s:%u\n", client_ip.c_str(), client_port);
-
-//             const char* data_ptr = config_json.c_str();
-//             ssize_t total_sent = 0;
-//             ssize_t remaining = config_json.size();
-
-//             while (remaining > 0) {
-//                 ssize_t sent = send(client.ID, data_ptr + total_sent, remaining, 0);
-//                 if (sent <= 0) {
-//                     perror("[Push] TCP send failed");       
-//                     return;
-//                 }
-//                 total_sent += sent;
-//                 remaining -= sent;
-
-//                 fprintf(stdout, "[Push] Sent %zd bytes, %zd remaining\n", sent, remaining);
-//             }
-
-//             fprintf(stdout, "[Push] Sent config (%zd bytes) to client\n", total_sent);
-
-//             shutdown(client.ID, SHUT_WR);
-//             std::this_thread::sleep_for(std::chrono::milliseconds(200));  // tempo para o ESP ler
-
-//             // Espera por ACK
-//             char ack_buf[64] = {0};
-//             ssize_t ack_len = recv(client.ID, ack_buf, sizeof(ack_buf) - 1, 0);
-//             if (ack_len > 0) {
-//                 ack_buf[ack_len] = '\0';
-//                 fprintf(stdout, "[Push] Client ACK: %s\n", ack_buf);
-//             } else {
-//                 fprintf(stdout, "[Push] No ACK received\n");
-//             }
-
-//             result = PUSHING_SUCCESS;
-//         }, 0);
-//     });
-
-//     std::this_thread::sleep_for(std::chrono::milliseconds(250)); // aguarda listener
-
-//     // Envia comando Push via UDP
-//     json JsonReply = {
-//         {"Provider", "Orchestrator"},
-//         {"Request", "Push"},
-//         {"Apply", apply},
-//         {"MAC Address", mac},
-//         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-//         {"Calling", "All"},
-//         {"Reply Port", port}
-//     };
-
-//     if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
-//         fprintf(stderr, "Error sending config pushing call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
-//         return PUSHING_FAIL;
-//     }
-
-//     tcpListenerThread.join();
-//     return result;
-// }
-
-bool Orchestrator::Update(std::string target) {
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-
-    std::string ip_address, mac_address;
-
-    if (target.find(':') != std::string::npos) {
-        mac_address = target;
-        ip_address = queryIPAddress(target.c_str());
-    } else if (target.find('.') != std::string::npos) {
-        mac_address = queryMACAddress(target.c_str());
-        ip_address = target;
-    } else {
+    json device = getDevice(target);
+    if (device.empty()) {
+        ServerLog->Write("[Update] Target device not found: " + string(target.c_str()), LOGLEVEL_WARNING);
         return false;
     }
 
-    if (Configuration.contains("Managed Devices") && Configuration["Managed Devices"].is_object()) {
-        const auto& managedDevices = Configuration["Managed Devices"];
-        if (managedDevices.size() == 0) {
-            fprintf(stderr, "No devices managed by this Orchestrator.\r\n\r\n");
-            exit(1);
-        } else {
-            if (managedDevices.contains(mac_address)) {
-                json JsonReply;
-        
-                JsonReply["Provider"] = "Orchestrator";
-                JsonReply["Request"] = "Update";
-                JsonReply["Server ID"] = Configuration["Configuration"]["Server ID"].get<string>();
-                JsonReply["MAC Address"] = mac_address;
+    auto it = device.begin();
+    const string ip = it.value().at("IP Address").get<string>();
+    ServerLog->Write("[Update] " + it.key() + " - " + ip, LOGLEVEL_INFO);
 
-                if (sendMessage(JsonReply.dump(), Configuration["Configuration"]["Port"], ip_address.c_str()) == true) {
-                    fprintf(stdout, "Sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-                    return true;
-                } else {
-                    fprintf(stderr, "Error sending restart request to %s - UDP (%s:%d).\r\n\r\n", mac_address.c_str(), ip_address.c_str(), port);
-                    exit(1);
-                }
-            } else {
-                fprintf(stderr, "Device %s is not managed by this Orchestrator.\r\n\r\n", mac_address.c_str());
-                exit(1);
-            }
-        }
-    }
-
-    return false;
+    return SendToDevice(ip, JsonCommand);
 }
 
 bool Orchestrator::Initialize() {
@@ -1032,6 +875,13 @@ bool Orchestrator::ReloadConfig(const std::string& orchestrator_url, uint16_t or
     return rst;
 }
 
+// Helper: converte in_addr -> string
+static inline std::string to_ip(const in_addr &addr) {
+    char buf[INET_ADDRSTRLEN]{};
+    inet_ntop(AF_INET, &addr, buf, sizeof(buf));
+    return std::string(buf);
+}
+
 int Orchestrator::Manage() {
     sigset_t mask;
     sigemptyset(&mask);
@@ -1053,6 +903,7 @@ int Orchestrator::Manage() {
         return 1;
     }
 
+    // TCP server socket
     int manager_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (manager_fd == -1) {
         ServerLog->Write("[Manager] Socket", LOGLEVEL_ERROR);
@@ -1060,42 +911,59 @@ int Orchestrator::Manage() {
         return 1;
     }
 
+    // ---- NOVO: UDP socket para Discover ----
+    int udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (udp_fd == -1) {
+        ServerLog->Write("[Manager] UDP socket", LOGLEVEL_ERROR);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    int one = 1;
+    setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    setsockopt(udp_fd,     SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    setsockopt(udp_fd,     SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
+#ifdef IP_PKTINFO
+    setsockopt(udp_fd, IPPROTO_IP, IP_PKTINFO, &one, sizeof(one));
+#endif
+
+    // timerfd para status
     int timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
     if (timer_fd == -1) {
         ServerLog->Write("[Manager] timerfd create", LOGLEVEL_ERROR);
+        close(udp_fd);
         close(manager_fd);
         close(signal_fd);
         return 1;
     }
 
     itimerspec its{};
-    its.it_value.tv_sec   = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
-    its.it_interval.tv_sec= JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_value.tv_sec    = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_interval.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
     if (timerfd_settime(timer_fd, 0, &its, nullptr) < 0) {
         ServerLog->Write("[Manager] timerfd_settime", LOGLEVEL_ERROR);
         close(timer_fd);
+        close(udp_fd);
         close(manager_fd);
         close(signal_fd);
         return 1;
     }
 
-    int opt = 1;
-    if (setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        ServerLog->Write("[Manager] setsockopt(SO_REUSEADDR)", LOGLEVEL_ERROR);
-        close(manager_fd);
-        close(signal_fd);
-        return 1;
-    }
-
+    // Opcional: travar em interface específica se configurado
     if (mBindAddr.s_addr != 0) {
         const std::string iface = JSON<string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
             if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
                 ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
             }
+            if (setsockopt(udp_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
+                ServerLog->Write("[Manager] setsockopt(UDP SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
+            }
         }
     }
 
+    // Bind TCP
     sockaddr_in address{};
     address.sin_family = AF_INET;
     address.sin_port   = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
@@ -1103,6 +971,8 @@ int Orchestrator::Manage() {
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
         ServerLog->Write("Bind failed - check if TCP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
+        close(timer_fd);
+        close(udp_fd);
         close(manager_fd);
         close(signal_fd);
         return 1;
@@ -1110,25 +980,42 @@ int Orchestrator::Manage() {
 
     if (listen(manager_fd, 10) < 0) {
         ServerLog->Write("[Manager] Listen", LOGLEVEL_ERROR);
+        close(timer_fd);
+        close(udp_fd);
+        close(manager_fd);
+        close(signal_fd);
+        return 1;
+    }
+
+    // Bind UDP (mesma porta do TCP; troque se quiser porta específica de discovery)
+    sockaddr_in uaddr{};
+    uaddr.sin_family = AF_INET;
+    uaddr.sin_port   = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+    uaddr.sin_addr   = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+
+    if (bind(udp_fd, (sockaddr*)&uaddr, sizeof(uaddr)) < 0) {
+        ServerLog->Write("Bind failed - check if UDP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
+        close(timer_fd);
+        close(udp_fd);
         close(manager_fd);
         close(signal_fd);
         return 1;
     }
 
     const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
-
     ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
 
     bool running = true;
     UpdateStatus(running);
 
     while (running) {
-        struct pollfd pfds[3];
+        struct pollfd pfds[4];
         pfds[0].fd = signal_fd;  pfds[0].events = POLLIN;
         pfds[1].fd = manager_fd; pfds[1].events = POLLIN;
         pfds[2].fd = timer_fd;   pfds[2].events = POLLIN;
+        pfds[3].fd = udp_fd;     pfds[3].events = POLLIN;
 
-        int pr = poll(pfds, 3, -1);
+        int pr = poll(pfds, 4, -1);
         if (pr < 0) {
             if (errno == EINTR) continue;
             ServerLog->Write("[Manager] Poll", LOGLEVEL_ERROR);
@@ -1154,7 +1041,7 @@ int Orchestrator::Manage() {
             }
         }
 
-        // conexões
+        // conexões TCP
         if (pfds[1].revents & POLLIN) {
             sockaddr_in client_addr{};
             socklen_t client_len = sizeof(client_addr);
@@ -1164,42 +1051,25 @@ int Orchestrator::Manage() {
                 continue;
             }
 
-            // ---- NOVO: delimitação por "idle" na leitura da REQUISIÇÃO ----
-            // Considera fim da requisição após ~1.5s sem novos bytes.
+            // delimitação por idle (~1.5s)
             timeval rcv_to{};
             rcv_to.tv_sec  = 1;
-            rcv_to.tv_usec = 500000; // 1.5s
-            if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_to, sizeof(rcv_to)) < 0) {
-                ServerLog->Write("[Manager] setsockopt(SO_RCVTIMEO)", LOGLEVEL_WARNING);
-            }
+            rcv_to.tv_usec = 500000;
+            setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_to, sizeof(rcv_to));
 
             std::string incoming;
             std::vector<char> buffer(buf_sz);
-
             for (;;) {
                 ssize_t r = ::recv(client_fd, buffer.data(), buffer.size(), 0);
-                if (r > 0) {
-                    incoming.append(buffer.data(), static_cast<size_t>(r));
-                    continue;
-                }
-                if (r == 0) {
-                    // peer fechou (também é um fim de requisição válido)
-                    break;
-                }
-                if (errno == EINTR) {
-                    continue;
-                }
-                if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    // timeout de leitura: não chegaram novos bytes dentro da janela -> fim da requisição
-                    break;
-                }
+                if (r > 0) { incoming.append(buffer.data(), (size_t)r); continue; }
+                if (r == 0) break;
+                if (errno == EINTR) continue;
+                if (errno == EAGAIN || errno == EWOULDBLOCK) break;
                 ServerLog->Write("[Manager] recv error", LOGLEVEL_ERROR);
                 break;
             }
-            // ---- FIM DO BLOCO NOVO ----
 
             OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
-
             client->IncomingBuffer(incoming);
 
             if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
@@ -1215,7 +1085,7 @@ int Orchestrator::Manage() {
                         {"Timestamp", CurrentDateTime()}
                     };
                     client->OutgoingBuffer(JsonReply);
-                    replied = client->Reply(); // <- Reply deve fazer shutdown(SHUT_WR)
+                    replied = client->Reply();
                 }
 
                 if (Command == "ReloadConfig") {
@@ -1232,6 +1102,12 @@ int Orchestrator::Manage() {
                 if (Command == "Restart") {
                     if (client->IncomingJSON().value("Parameter", "") == "ACK") {
                         ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
+                    }
+                }
+
+                if (Command == "Update") {
+                    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
+                        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to update", LOGLEVEL_INFO);
                     }
                 }
 
@@ -1290,7 +1166,7 @@ int Orchestrator::Manage() {
                     } else {
                         JsonReply = {
                             {"Provider", Version.ProductName},
-                            {"Result", r}, // envia o objeto de config completo
+                            {"Result", r},
                             {"Timestamp", CurrentDateTime()}
                         };
                         client->OutgoingBuffer(JsonReply);
@@ -1328,14 +1204,71 @@ int Orchestrator::Manage() {
                 }
             }
         }
-    }
+
+        // ---- NOVO: UDP Discover ----
+        if (pfds[3].revents & POLLIN) {
+            // usar recvmsg para obter IP local de chegada
+            char inbuf[2048];
+            struct iovec iov{};
+            iov.iov_base = inbuf;
+            iov.iov_len  = sizeof(inbuf);
+
+            char cmsgbuf[CMSG_SPACE(sizeof(in_pktinfo))];
+            struct msghdr msg{};
+            sockaddr_in peer{};
+            msg.msg_name       = &peer;
+            msg.msg_namelen    = sizeof(peer);
+            msg.msg_iov        = &iov;
+            msg.msg_iovlen     = 1;
+            msg.msg_control    = cmsgbuf;
+            msg.msg_controllen = sizeof(cmsgbuf);
+
+            ssize_t r = recvmsg(udp_fd, &msg, 0);
+            if (r > 0) {
+                std::string payload(inbuf, inbuf + r);
+
+                nlohmann::json j;
+                bool ok = false;
+                try { j = nlohmann::json::parse(payload); ok = true; } catch (...) {}
+
+                if (ok && j.is_object() && j.value("Orchestrator", std::string()) == "Discover") {
+                    in_addr local_ip = (mBindAddr.s_addr != 0) ? mBindAddr : uaddr.sin_addr;
+
+                    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+                         cmsg != nullptr;
+                         cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+                        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+                            auto *pi = (in_pktinfo*)CMSG_DATA(cmsg);
+                            local_ip = pi->ipi_addr; // IP local que recebeu o pacote
+                            break;
+                        }
+                    }
+
+                    nlohmann::json reply = {
+                        {"Orchestrator", {
+                            {"IP Address", to_ip(local_ip)},
+                            {"Port",       Configuration["Configuration"]["Port"].get<uint16_t>()},
+                            {"Server ID",  Configuration["Configuration"]["Server ID"].get<std::string>()}
+                        }}
+                    };
+
+                    auto out = reply.dump();
+                    if (sendto(udp_fd, out.data(), out.size(), 0, (sockaddr*)&peer, sizeof(peer)) < 0) {
+                        ServerLog->Write("[UDP] sendto failed", LOGLEVEL_WARNING);
+                    } else {
+                        ServerLog->Write("UDP Discover replied to " + String(to_ip(peer.sin_addr)), LOGLEVEL_INFO);
+                    }
+                }
+            }
+        }
+    } // while
 
     close(manager_fd);
     close(signal_fd);
     close(timer_fd);
+    close(udp_fd);
 
     UpdateStatus(running);
-
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
 }

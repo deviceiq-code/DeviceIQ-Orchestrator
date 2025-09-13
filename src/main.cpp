@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
             }
         } break;
         case ACTION_UPDATE : {
-            bool r = ServerOrchestrator->Update(TargetDevice.c_str());
+            bool r = ServerOrchestrator->Update(TargetDevice);
             fprintf(stdout, "update command sent.\r\n\r\n");
         } break;
         case ACTION_RESTART : {

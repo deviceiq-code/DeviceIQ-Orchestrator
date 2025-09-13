@@ -160,6 +160,7 @@ class Orchestrator {
         bool Refresh(const String &target);
         bool Pull(const String &target);
         bool Push(const String &target);
+        bool Update(const String &target);
         bool GetLog(const String &target);
 
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
@@ -173,7 +174,6 @@ class Orchestrator {
         bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
         bool ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port);
 
-        bool Update(std::string target);
         
         bool Initialize();
         bool ReadConfiguration();

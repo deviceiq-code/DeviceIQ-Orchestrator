@@ -7,7 +7,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL1_Relay",
-            "State": true
+            "State": false
         },
         {
             "Address": 27,
@@ -16,7 +16,7 @@
             "Enabled": true,
             "Events": {},
             "Name": "OL2_Relay",
-            "State": true
+            "State": false
         },
         {
             "Address": 26,
@@ -105,7 +105,7 @@
     },
     "Orchestrator": {
         "Assigned": true,
-        "IP Address": "192.168.2.144",
+        "IP Address": "192.168.2.10",
         "Port": 30030,
         "Server ID": "ZCZ95YJJ693UF78"
     },
@@ -129,7 +129,7 @@
         "Auto Reboot": true,
         "Check Interval": 172800000,
         "Debug": false,
-        "Update Manifest": "https://server.dts-networ.com:8081/update.json"
+        "Update Manifest": "https://server.dts-network.com:8081/update-home.json"
     },
     "Webhooks": {
         "Enabled": true,
