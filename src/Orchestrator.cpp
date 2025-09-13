@@ -1298,19 +1298,22 @@ int Orchestrator::Manage() {
                     }
                 }
 
+                if (Command == "GetLog") {
+                    // TODO
+                    replied = true;
+                }
+
                 if (replied) {
                     ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
                 } else {
-                    // Se não respondeu (ou deu erro), ainda assim garanta que a escrita foi fechada
-                    // (caso Reply() não tenha sido chamado).
-                    ::shutdown(client_fd, SHUT_WR); // ignorar erro se já estiver fechado
+                    ::shutdown(client_fd, SHUT_WR);
                 }
 
             } else {
                 ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
             }
 
-            close(client_fd); // fecha o socket (Reply() faz só SHUT_WR)
+            close(client_fd);
         }
 
         // timer
