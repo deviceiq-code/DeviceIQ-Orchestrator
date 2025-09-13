@@ -5,8 +5,7 @@ bool OrchestratorClient::Reply() {
     if (mID <= 0) return false;
     if (mOutgoingJSON.empty()) return true;
 
-    string replymessage = mOutgoingJSON.dump(-1);
-
+    const std::string replymessage = mOutgoingJSON.dump(-1);
     const char* data = replymessage.data();
     size_t total_sent = 0;
     size_t remaining  = replymessage.size();
@@ -17,21 +16,34 @@ bool OrchestratorClient::Reply() {
         ssize_t n = ::send(mID, data + total_sent, remaining, MSG_NOSIGNAL);
         if (n > 0) {
             total_sent += static_cast<size_t>(n);
-            remaining -= static_cast<size_t>(n);
+            remaining  -= static_cast<size_t>(n);
             continue;
         }
         if (n == -1) {
             if (errno == EINTR) continue;
 
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                struct pollfd pfd{mID, POLLOUT, 0 };
+                struct pollfd pfd{ mID, POLLOUT, 0 };
                 int pr = ::poll(&pfd, 1, SEND_TIMEOUT_MS);
                 if (pr > 0) continue;
+                // timeout esperando liberar para enviar
                 return false;
             }
+            // erro definitivo (EPIPE, etc.)
             return false;
         }
     }
+
+    // **Sinaliza EOF na direção de escrita** para o cliente detectar fim da resposta.
+    if (::shutdown(mID, SHUT_WR) == -1) {
+        // opcional: log errno (E.g., perror("shutdown"));
+        return false;
+    }
+
+    // Se você NÃO precisa manter a conexão para mais nada, feche tudo:
+    // ::close(mID);
+    // mID = -1;
+
     return true;
 }
 
@@ -550,117 +562,117 @@ OperationResult Orchestrator::Remove(std::string target, const uint16_t listen_t
 //     return result;
 // }
 
-OperationResult Orchestrator::Push(std::string target, const uint16_t listen_timeout, const bool apply) {
-    if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
-        return NOTMANAGED;
+// OperationResult Orchestrator::Push(std::string target, const uint16_t listen_timeout, const bool apply) {
+//     if (!Configuration.contains("Managed Devices") || !Configuration["Managed Devices"].is_object())
+//         return NOTMANAGED;
 
-    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
-    std::string ip, mac;
+//     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+//     std::string ip, mac;
 
-    if (target.find(':') != std::string::npos) {
-        mac = target;
-        ip = queryIPAddress(target.c_str());
-    } else if (target.find('.') != std::string::npos) {
-        ip = target;
-        mac = queryMACAddress(target.c_str());
-    } else {
-        return PUSHING_FAIL;
-    }
+//     if (target.find(':') != std::string::npos) {
+//         mac = target;
+//         ip = queryIPAddress(target.c_str());
+//     } else if (target.find('.') != std::string::npos) {
+//         ip = target;
+//         mac = queryMACAddress(target.c_str());
+//     } else {
+//         return PUSHING_FAIL;
+//     }
 
-    // Load config file
-    std::string config_filename = mac;
-    config_filename.erase(std::remove(config_filename.begin(), config_filename.end(), ':'), config_filename.end());
-    config_filename += ".json";
+//     // Load config file
+//     std::string config_filename = mac;
+//     config_filename.erase(std::remove(config_filename.begin(), config_filename.end(), ':'), config_filename.end());
+//     config_filename += ".json";
 
-    std::ifstream ifs(config_filename);
-    if (!ifs.is_open()) {
-        fprintf(stderr, "[Push] Config file %s not found\n", config_filename.c_str());
-        return NOTMANAGED;
-    }
+//     std::ifstream ifs(config_filename);
+//     if (!ifs.is_open()) {
+//         fprintf(stderr, "[Push] Config file %s not found\n", config_filename.c_str());
+//         return NOTMANAGED;
+//     }
 
-    std::stringstream buffer;
-    buffer << ifs.rdbuf();
-    std::string config_json_pretty = buffer.str();  // JSON identado (para leitura)
-    ifs.close();
+//     std::stringstream buffer;
+//     buffer << ifs.rdbuf();
+//     std::string config_json_pretty = buffer.str();  // JSON identado (para leitura)
+//     ifs.close();
 
-    // Compacta o JSON antes de enviar
-    json parsed;
-    try {
-        parsed = json::parse(config_json_pretty);
-    } catch (const std::exception& e) {
-        fprintf(stderr, "[Push] Failed to parse saved config: %s\n", e.what());
-        return PUSHING_FAIL;
-    }
+//     // Compacta o JSON antes de enviar
+//     json parsed;
+//     try {
+//         parsed = json::parse(config_json_pretty);
+//     } catch (const std::exception& e) {
+//         fprintf(stderr, "[Push] Failed to parse saved config: %s\n", e.what());
+//         return PUSHING_FAIL;
+//     }
 
-    std::string config_json = parsed.dump();  // Sem identação
+//     std::string config_json = parsed.dump();  // Sem identação
 
-    OperationResult result = PUSHING_FAIL;
+//     OperationResult result = PUSHING_FAIL;
 
-    std::thread tcpListenerThread([&]() {
-        fprintf(stdout, "[Push] Binding Listen() now... (Port %d)\n", port);
-        serverListen(port, listen_timeout, [&](Client client) {
-            fprintf(stdout, "[Push] Listen triggered!\n");
+//     std::thread tcpListenerThread([&]() {
+//         fprintf(stdout, "[Push] Binding Listen() now... (Port %d)\n", port);
+//         serverListen(port, listen_timeout, [&](Client client) {
+//             fprintf(stdout, "[Push] Listen triggered!\n");
 
-            std::string client_ip = inet_ntoa(client.Info.sin_addr);
-            uint16_t client_port = ntohs(client.Info.sin_port);
-            fprintf(stdout, "[Push] Accepted TCP connection from %s:%u\n", client_ip.c_str(), client_port);
+//             std::string client_ip = inet_ntoa(client.Info.sin_addr);
+//             uint16_t client_port = ntohs(client.Info.sin_port);
+//             fprintf(stdout, "[Push] Accepted TCP connection from %s:%u\n", client_ip.c_str(), client_port);
 
-            const char* data_ptr = config_json.c_str();
-            ssize_t total_sent = 0;
-            ssize_t remaining = config_json.size();
+//             const char* data_ptr = config_json.c_str();
+//             ssize_t total_sent = 0;
+//             ssize_t remaining = config_json.size();
 
-            while (remaining > 0) {
-                ssize_t sent = send(client.ID, data_ptr + total_sent, remaining, 0);
-                if (sent <= 0) {
-                    perror("[Push] TCP send failed");       
-                    return;
-                }
-                total_sent += sent;
-                remaining -= sent;
+//             while (remaining > 0) {
+//                 ssize_t sent = send(client.ID, data_ptr + total_sent, remaining, 0);
+//                 if (sent <= 0) {
+//                     perror("[Push] TCP send failed");       
+//                     return;
+//                 }
+//                 total_sent += sent;
+//                 remaining -= sent;
 
-                fprintf(stdout, "[Push] Sent %zd bytes, %zd remaining\n", sent, remaining);
-            }
+//                 fprintf(stdout, "[Push] Sent %zd bytes, %zd remaining\n", sent, remaining);
+//             }
 
-            fprintf(stdout, "[Push] Sent config (%zd bytes) to client\n", total_sent);
+//             fprintf(stdout, "[Push] Sent config (%zd bytes) to client\n", total_sent);
 
-            shutdown(client.ID, SHUT_WR);
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));  // tempo para o ESP ler
+//             shutdown(client.ID, SHUT_WR);
+//             std::this_thread::sleep_for(std::chrono::milliseconds(200));  // tempo para o ESP ler
 
-            // Espera por ACK
-            char ack_buf[64] = {0};
-            ssize_t ack_len = recv(client.ID, ack_buf, sizeof(ack_buf) - 1, 0);
-            if (ack_len > 0) {
-                ack_buf[ack_len] = '\0';
-                fprintf(stdout, "[Push] Client ACK: %s\n", ack_buf);
-            } else {
-                fprintf(stdout, "[Push] No ACK received\n");
-            }
+//             // Espera por ACK
+//             char ack_buf[64] = {0};
+//             ssize_t ack_len = recv(client.ID, ack_buf, sizeof(ack_buf) - 1, 0);
+//             if (ack_len > 0) {
+//                 ack_buf[ack_len] = '\0';
+//                 fprintf(stdout, "[Push] Client ACK: %s\n", ack_buf);
+//             } else {
+//                 fprintf(stdout, "[Push] No ACK received\n");
+//             }
 
-            result = PUSHING_SUCCESS;
-        }, 0);
-    });
+//             result = PUSHING_SUCCESS;
+//         }, 0);
+//     });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(250)); // aguarda listener
+//     std::this_thread::sleep_for(std::chrono::milliseconds(250)); // aguarda listener
 
-    // Envia comando Push via UDP
-    json JsonReply = {
-        {"Provider", "Orchestrator"},
-        {"Request", "Push"},
-        {"Apply", apply},
-        {"MAC Address", mac},
-        {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
-        {"Calling", "All"},
-        {"Reply Port", port}
-    };
+//     // Envia comando Push via UDP
+//     json JsonReply = {
+//         {"Provider", "Orchestrator"},
+//         {"Request", "Push"},
+//         {"Apply", apply},
+//         {"MAC Address", mac},
+//         {"Server ID", Configuration["Configuration"]["Server ID"].get<string>()},
+//         {"Calling", "All"},
+//         {"Reply Port", port}
+//     };
 
-    if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
-        fprintf(stderr, "Error sending config pushing call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
-        return PUSHING_FAIL;
-    }
+//     if (!sendMessage(JsonReply.dump(), port, ip.c_str())) {
+//         fprintf(stderr, "Error sending config pushing call - UDP (%s:%d).\r\n\r\n", ip.c_str(), port);
+//         return PUSHING_FAIL;
+//     }
 
-    tcpListenerThread.join();
-    return result;
-}
+//     tcpListenerThread.join();
+//     return result;
+// }
 
 bool Orchestrator::Update(std::string target) {
     const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
@@ -808,6 +820,34 @@ bool Orchestrator::SaveDeviceConfiguration(const json &config) {
     outFile.close();
 
     return !outFile.fail();
+}
+
+const json Orchestrator::ReadDeviceConfiguration(const String &target) {
+    json device = getDevice(target);
+
+    if (device.empty()) return json::object();
+
+    auto it = device.begin();
+    std::string mac = it.key();
+    mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
+
+    std::string config_file = "./config/" + mac + ".json";
+    
+    std::ifstream ifs(config_file);
+    if (!ifs.is_open()) return json::object();
+
+    std::stringstream buffer;
+    buffer << ifs.rdbuf();
+    std::string config_json_pretty = buffer.str();
+    ifs.close();
+
+    try {
+        return json::parse(config_json_pretty);
+    } catch (const std::exception& e) {
+        return json::object();
+    }
+
+    return json::object();
 }
 
 bool Orchestrator::resolveInterfaceOrIp(const std::string& ifaceOrIp, in_addr& out) {
@@ -1029,8 +1069,8 @@ int Orchestrator::Manage() {
     }
 
     itimerspec its{};
-    its.it_value.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
-    its.it_interval.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_value.tv_sec   = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_interval.tv_sec= JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
     if (timerfd_settime(timer_fd, 0, &its, nullptr) < 0) {
         ServerLog->Write("[Manager] timerfd_settime", LOGLEVEL_ERROR);
         close(timer_fd);
@@ -1058,11 +1098,11 @@ int Orchestrator::Manage() {
 
     sockaddr_in address{};
     address.sin_family = AF_INET;
-    address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
-    address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+    address.sin_port   = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+    address.sin_addr   = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
-        ServerLog->Write("Bind failed - chech if TCP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
+        ServerLog->Write("Bind failed - check if TCP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
         close(manager_fd);
         close(signal_fd);
         return 1;
@@ -1084,9 +1124,9 @@ int Orchestrator::Manage() {
 
     while (running) {
         struct pollfd pfds[3];
-        pfds[0].fd = signal_fd; pfds[0].events = POLLIN;
+        pfds[0].fd = signal_fd;  pfds[0].events = POLLIN;
         pfds[1].fd = manager_fd; pfds[1].events = POLLIN;
-        pfds[2].fd = timer_fd; pfds[2].events = POLLIN;
+        pfds[2].fd = timer_fd;   pfds[2].events = POLLIN;
 
         int pr = poll(pfds, 3, -1);
         if (pr < 0) {
@@ -1095,172 +1135,185 @@ int Orchestrator::Manage() {
             break;
         }
 
+        // sinais
         if (pfds[0].revents & POLLIN) {
             signalfd_siginfo si{};
             ssize_t n = read(signal_fd, &si, sizeof(si));
             if (n == sizeof(si)) {
                 switch (si.ssi_signo) {
-                    case SIGINT:
-                        ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO);
-                        running = false;
-                        break;
-                    case SIGTERM:
-                        ServerLog->Write("SIGTERM", LOGLEVEL_INFO);
-                        running = false;
-                        break;
-                    case SIGHUP:
-                        ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO);
-                        ReadConfiguration();
-                        break;
-                    case SIGUSR1:
-                        ServerLog->Write("SIGUSR1", LOGLEVEL_INFO);
-                        break;
-                    case SIGUSR2:
-                        ServerLog->Write("SIGUSR2", LOGLEVEL_INFO);
-                        break;
-                    case SIGPIPE:
-                        ServerLog->Write("SIGPIPE", LOGLEVEL_INFO);
-                        break;
-                    default:
-                        ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO);
-                        break;
+                    case SIGINT:  ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO); running = false; break;
+                    case SIGTERM: ServerLog->Write("SIGTERM", LOGLEVEL_INFO);         running = false; break;
+                    case SIGHUP:  ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO); ReadConfiguration(); break;
+                    case SIGUSR1: ServerLog->Write("SIGUSR1", LOGLEVEL_INFO); break;
+                    case SIGUSR2: ServerLog->Write("SIGUSR2", LOGLEVEL_INFO); break;
+                    case SIGPIPE: ServerLog->Write("SIGPIPE", LOGLEVEL_INFO); break;
+                    default:      ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO); break;
                 }
             } else {
                 ServerLog->Write("[Manager] read(signalfd) short read", LOGLEVEL_ERROR);
             }
         }
 
+        // conexões
         if (pfds[1].revents & POLLIN) {
             sockaddr_in client_addr{};
             socklen_t client_len = sizeof(client_addr);
             int client_fd = accept(manager_fd, (sockaddr*)&client_addr, &client_len);
-            if (client_fd >= 0) {
-                std::string incoming;
-                std::vector<char> buffer(buf_sz);
-
-                while (true) {
-                    ssize_t r = recv(client_fd, buffer.data(), buffer.size(), 0);
-                    if (r > 0) {
-                        incoming.append(buffer.data(), static_cast<size_t>(r));
-                    } else if (r == 0) {
-                        // peer closed
-                        break;
-                    } else {
-                        if (errno == EINTR) continue;
-                        ServerLog->Write("[Manager] recv", LOGLEVEL_ERROR);
-                        break;
-                    }
-                }
-
-                OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
-
-                // fprintf(stdout, "\r\n\r\n%s\r\n\r\n", incoming.c_str());
-
-                client->IncomingBuffer(incoming);
-
-                if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
-                    const string &Command = JSON<string>(client->IncomingJSON().value("Command", ""));
-
-                    json JsonReply;
-                    bool replied = false;
-
-                    if (Command == "CheckOnline") {
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", "Yes"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-
-                    if (Command == "ReloadConfig") {
-                        ReadConfiguration();
-
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", "Ok"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-
-                    if (Command == "Restart") {
-                        if (client->IncomingJSON().value("Parameter", "") == "ACK") {
-                            ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
-                        }
-                    }
-
-                    if (Command == "Discover") {
-                        const json &Parameter = client->IncomingJSON()["Parameter"];
-                        string r = Parameter.dump(-1);
-
-                        if (Configuration["Managed Devices"].contains(Parameter["MAC Address"])) {
-                            Configuration["Managed Devices"][Parameter["MAC Address"]] = Parameter;
-                            Configuration["Managed Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
-                            Configuration["Managed Devices"][Parameter["MAC Address"]].erase("MAC Address");
-                            Configuration["Managed Devices"][Parameter["MAC Address"]].erase("Server ID");
-
-                            ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Managed Devices section", LOGLEVEL_INFO);
-                        } else {
-                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]] = Parameter;
-                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
-                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("MAC Address");
-                            Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("Server ID");
-
-                            ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Unmanaged Devices section", LOGLEVEL_INFO);
-                        }
-
-                        SaveConfiguration();
-
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", "Ok"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-
-                    if (Command == "Pull") {
-                        const json &Parameter = client->IncomingJSON()["Parameter"];
-                        if (SaveDeviceConfiguration(Parameter)) {
-                            JsonReply = {
-                                {"Provider", Version.ProductName},
-                                {"Result", "Ok"},
-                                {"Timestamp", CurrentDateTime()}
-                            };
-
-                            ServerLog->Write("Configuration device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfuly", LOGLEVEL_INFO);
-                        } else {
-                                JsonReply = {
-                                {"Provider", Version.ProductName},
-                                {"Result", "Fail"},
-                                {"Timestamp", CurrentDateTime()}
-                            };
-
-                            ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " configuration", LOGLEVEL_ERROR);
-                        }
-
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-
-                    if (replied) ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
-                } else {
-                    ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
-                }
-
-                close(client_fd);
-            } else {
+            if (client_fd < 0) {
                 ServerLog->Write("[Manager] accept", LOGLEVEL_ERROR);
+                continue;
             }
+
+            // ---- NOVO: delimitação por "idle" na leitura da REQUISIÇÃO ----
+            // Considera fim da requisição após ~1.5s sem novos bytes.
+            timeval rcv_to{};
+            rcv_to.tv_sec  = 1;
+            rcv_to.tv_usec = 500000; // 1.5s
+            if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_to, sizeof(rcv_to)) < 0) {
+                ServerLog->Write("[Manager] setsockopt(SO_RCVTIMEO)", LOGLEVEL_WARNING);
+            }
+
+            std::string incoming;
+            std::vector<char> buffer(buf_sz);
+
+            for (;;) {
+                ssize_t r = ::recv(client_fd, buffer.data(), buffer.size(), 0);
+                if (r > 0) {
+                    incoming.append(buffer.data(), static_cast<size_t>(r));
+                    continue;
+                }
+                if (r == 0) {
+                    // peer fechou (também é um fim de requisição válido)
+                    break;
+                }
+                if (errno == EINTR) {
+                    continue;
+                }
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    // timeout de leitura: não chegaram novos bytes dentro da janela -> fim da requisição
+                    break;
+                }
+                ServerLog->Write("[Manager] recv error", LOGLEVEL_ERROR);
+                break;
+            }
+            // ---- FIM DO BLOCO NOVO ----
+
+            OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
+
+            client->IncomingBuffer(incoming);
+
+            if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
+                const string &Command = JSON<string>(client->IncomingJSON().value("Command", ""));
+
+                json JsonReply;
+                bool replied = false;
+
+                if (Command == "CheckOnline") {
+                    JsonReply = {
+                        {"Provider", Version.ProductName},
+                        {"Result", "Yes"},
+                        {"Timestamp", CurrentDateTime()}
+                    };
+                    client->OutgoingBuffer(JsonReply);
+                    replied = client->Reply(); // <- Reply deve fazer shutdown(SHUT_WR)
+                }
+
+                if (Command == "ReloadConfig") {
+                    ReadConfiguration();
+                    JsonReply = {
+                        {"Provider", Version.ProductName},
+                        {"Result", "Ok"},
+                        {"Timestamp", CurrentDateTime()}
+                    };
+                    client->OutgoingBuffer(JsonReply);
+                    replied = client->Reply();
+                }
+
+                if (Command == "Restart") {
+                    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
+                        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
+                    }
+                }
+
+                if (Command == "Discover") {
+                    const json &Parameter = client->IncomingJSON()["Parameter"];
+                    if (Configuration["Managed Devices"].contains(Parameter["MAC Address"])) {
+                        Configuration["Managed Devices"][Parameter["MAC Address"]] = Parameter;
+                        Configuration["Managed Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
+                        Configuration["Managed Devices"][Parameter["MAC Address"]].erase("MAC Address");
+                        Configuration["Managed Devices"][Parameter["MAC Address"]].erase("Server ID");
+                        ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Managed Devices section", LOGLEVEL_INFO);
+                    } else {
+                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]] = Parameter;
+                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
+                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("MAC Address");
+                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("Server ID");
+                        ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Unmanaged Devices section", LOGLEVEL_INFO);
+                    }
+                    SaveConfiguration();
+
+                    JsonReply = {
+                        {"Provider", Version.ProductName},
+                        {"Result", "Ok"},
+                        {"Timestamp", CurrentDateTime()}
+                    };
+                    client->OutgoingBuffer(JsonReply);
+                    replied = client->Reply();
+                }
+
+                if (Command == "Pull") {
+                    const json &Parameter = client->IncomingJSON()["Parameter"];
+                    if (SaveDeviceConfiguration(Parameter)) {
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", "Ok"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
+                        ServerLog->Write("Configuration device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
+                    } else {
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", "Fail"},
+                            {"Timestamp", CurrentDateTime()}
+                        };
+                        ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " configuration", LOGLEVEL_ERROR);
+                    }
+                    client->OutgoingBuffer(JsonReply);
+                    replied = client->Reply();
+                }
+
+                if (Command == "Push") {
+                    const String &Parameter = client->IncomingJSON()["Parameter"].get<String>();
+                    json r = ReadDeviceConfiguration(Parameter);
+                    if (r.empty()) {
+                        ServerLog->Write("Failed reading device " + Parameter + " configuration file", LOGLEVEL_ERROR);
+                    } else {
+                        JsonReply = {
+                            {"Provider", Version.ProductName},
+                            {"Result", r}, // envia o objeto de config completo
+                            {"Timestamp", CurrentDateTime()}
+                        };
+                        client->OutgoingBuffer(JsonReply);
+                        replied = client->Reply();
+                    }
+                }
+
+                if (replied) {
+                    ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
+                } else {
+                    // Se não respondeu (ou deu erro), ainda assim garanta que a escrita foi fechada
+                    // (caso Reply() não tenha sido chamado).
+                    ::shutdown(client_fd, SHUT_WR); // ignorar erro se já estiver fechado
+                }
+
+            } else {
+                ServerLog->Write("Invalid Protocol [" + client->IncomingBuffer() + "]", LOGLEVEL_ERROR);
+            }
+
+            close(client_fd); // fecha o socket (Reply() faz só SHUT_WR)
         }
 
+        // timer
         if (pfds[2].revents & POLLIN) {
             uint64_t expirations = 0;
             ssize_t n = read(timer_fd, &expirations, sizeof(expirations));
@@ -1283,6 +1336,7 @@ int Orchestrator::Manage() {
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
 }
+
 
 bool Orchestrator::SendToDevice(const std::string& destination, const json& payload) {
     if (payload.empty()) return false;
@@ -1514,7 +1568,7 @@ bool Orchestrator::Pull(const String &target) {
 
     if (target.Equals("all", true) || target.Equals("managed", true)) {
         if (!Configuration.contains("Managed Devices") || Configuration["Managed Devices"].empty()) {
-            ServerLog->Write("[Refresh] No devices managed", LOGLEVEL_WARNING);
+            ServerLog->Write("[Pull] No devices managed", LOGLEVEL_WARNING);
             return false;
         }
 
@@ -1551,6 +1605,59 @@ bool Orchestrator::Pull(const String &target) {
     auto it = device.begin();
     const std::string ip = it.value().at("IP Address").get<String>();
     ServerLog->Write("[Pull] " + it.key() + " - " + ip, LOGLEVEL_INFO);
+
+    return SendToDevice(ip, JsonCommand);
+}
+
+bool Orchestrator::Push(const String &target) {
+    const uint16_t port = Configuration["Configuration"]["Port"].get<uint16_t>();
+
+    nlohmann::json JsonCommand = {
+        {"Provider", "Orchestrator"},
+        {"Server ID", Configuration["Configuration"]["Server ID"].get<String>()},
+        {"Command", "Push"},
+        {"Parameter", ""}
+    };
+
+    if (target.Equals("all", true) || target.Equals("managed", true)) {
+        if (!Configuration.contains("Managed Devices") || Configuration["Managed Devices"].empty()) {
+            ServerLog->Write("[Push] No devices managed", LOGLEVEL_WARNING);
+            return false;
+        }
+
+        size_t ok = 0, fail = 0, skipped = 0;
+
+        for (auto &kv : Configuration["Managed Devices"].items()) {
+            const std::string mac = kv.key();
+            const nlohmann::json &dev = kv.value();
+
+            if (!dev.contains("IP Address") || dev["IP Address"].is_null()) {
+                ServerLog->Write("[Push] " + mac + " no IP Address found", LOGLEVEL_WARNING);
+                ++skipped;
+                continue;
+            }
+
+            const std::string ip = dev["IP Address"].get<std::string>();
+            ServerLog->Write("[Push] " + mac + " - " + ip, LOGLEVEL_INFO);
+
+            const bool sent = SendToDevice(ip, JsonCommand);
+            if (sent) ++ok; else ++fail;
+        }
+
+        ServerLog->Write("[Push] Multicast finished: Sent = " + std::to_string(ok) + ", Failed = " + std::to_string(fail) + ", Ignored = " + std::to_string(skipped), fail ? LOGLEVEL_WARNING : LOGLEVEL_INFO);
+
+        return ok > 0;
+    }
+
+    nlohmann::json device = getDevice(target);
+    if (device.empty()) {
+        ServerLog->Write("[Push] Target device not found: " + target, LOGLEVEL_WARNING);
+        return false;
+    }
+
+    auto it = device.begin();
+    const std::string ip = it.value().at("IP Address").get<String>();
+    ServerLog->Write("[Push] " + it.key() + " - " + ip, LOGLEVEL_INFO);
 
     return SendToDevice(ip, JsonCommand);
 }

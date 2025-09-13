@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
             fprintf(stdout, "Finish config pulling.\r\n\r\n");
         } break;
         case ACTION_PUSH : {
-            OperationResult r = ServerOrchestrator->Push(TargetDevice.c_str(), 15, Apply);
+            bool r = ServerOrchestrator->Push(TargetDevice);
             fprintf(stdout, "Finish config pushing.\r\n\r\n");
         } break;
         case ACTION_MANAGE : {

@@ -1,15 +1,9 @@
-[I][2025-09-12T21:24:27.292575Z] Configuration file: ./orchestrator.json
-[I][2025-09-12T21:24:27.292869Z] Server name: Genesis
-[I][2025-09-12T21:24:27.292977Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-12T21:24:27.293360Z] Service bind to ens4
-[I][2025-09-12T21:24:27.293602Z] [Pull] 3C:61:05:65:71:94 - 192.168.2.114
-[I][2025-09-12T21:24:27.293855Z] [Pull] D8:13:2A:7E:EE:C4 - 192.168.2.246
-[I][2025-09-12T21:24:27.294042Z] [Pull] Multicast finished: Sent = 2, Failed = 0, Ignored = 0
-[I][2025-09-12T21:24:27.442822Z] Configuration device DEVIQ-DEV saved successfuly
-[I][2025-09-12T21:24:27.443004Z] Request [Pull] replied to 192.168.2.114
-[I][2025-09-12T21:24:27.444706Z] Configuration device DEVIQ-LAB saved successfuly
-[I][2025-09-12T21:24:27.444830Z] Request [Pull] replied to 192.168.2.246
-[I][2025-09-12T21:25:20.529611Z] DEVIQ-DEV information saved on Managed Devices section
-[I][2025-09-12T21:25:20.530223Z] Request [Discover] replied to 192.168.2.114
-[I][2025-09-12T21:30:16.362264Z] DEVIQ-LAB information saved on Managed Devices section
-[I][2025-09-12T21:30:16.362598Z] Request [Discover] replied to 192.168.2.246
+[I][2025-09-13T02:52:08.603437Z] Configuration file: ./orchestrator.json
+[I][2025-09-13T02:52:08.603583Z] Server name: Genesis
+[I][2025-09-13T02:52:08.603633Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-13T02:52:08.603811Z] Service bind to ens4
+[I][2025-09-13T02:52:08.603985Z] [Push] D8:13:2A:7E:EE:C4 - 192.168.2.246
+[I][2025-09-13T02:52:10.194470Z] Request [Push] replied to 192.168.2.246
+[I][2025-09-13T02:52:17.167221Z] Device [DEVIQ-LAB] sent ACK to restart
+[I][2025-09-13T02:52:18.477373Z] DEVIQ-LAB information saved on Managed Devices section
+[I][2025-09-13T02:52:18.477717Z] Request [Discover] replied to 192.168.2.246

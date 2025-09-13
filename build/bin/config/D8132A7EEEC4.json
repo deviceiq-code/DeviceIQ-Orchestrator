@@ -1,22 +1,13 @@
 {
     "Components": [
         {
-            "Address": 14,
-            "Bus": "Onboard",
-            "Class": "Relay",
-            "Enabled": true,
-            "Events": {},
-            "Name": "OL1_Relay",
-            "State": true
-        },
-        {
             "Address": 27,
             "Bus": "Onboard",
             "Class": "Relay",
             "Enabled": true,
             "Events": {},
             "Name": "OL2_Relay",
-            "State": true
+            "State": false
         },
         {
             "Address": 26,
@@ -96,7 +87,7 @@
         "Gateway": "192.168.1.250",
         "Hostname": "DEVIQ-LAB",
         "IP Address": "192.168.2.30",
-        "MAC Address": "3C:61:05:64:59:44",
+        "MAC Address": "D8:13:2A:7E:EE:C4",
         "Netmask": "255.255.255.0",
         "Online Checking": true,
         "Online Checking Minutes": 1,
