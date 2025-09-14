@@ -911,7 +911,7 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // ---- NOVO: UDP socket para Discover ----
+    // ---- UDP socket para Discover ----
     int udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (udp_fd == -1) {
         ServerLog->Write("[Manager] UDP socket", LOGLEVEL_ERROR);
@@ -922,11 +922,13 @@ int Orchestrator::Manage() {
 
     int one = 1;
     setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    setsockopt(udp_fd,     SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    setsockopt(udp_fd,     SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
-#ifdef IP_PKTINFO
+
+    setsockopt(udp_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    setsockopt(udp_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one)); // ajuda em restarts rápidos
+    // SO_BROADCAST é necessário para ENVIAR broadcast (não para receber). Deixar setado não atrapalha:
+    setsockopt(udp_fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
+    // IP_PKTINFO para descobrir IP local que recebeu:
     setsockopt(udp_fd, IPPROTO_IP, IP_PKTINFO, &one, sizeof(one));
-#endif
 
     // timerfd para status
     int timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
@@ -941,6 +943,8 @@ int Orchestrator::Manage() {
     itimerspec its{};
     its.it_value.tv_sec    = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
     its.it_interval.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_value.tv_nsec = 0;
+    its.it_interval.tv_nsec = 0;
     if (timerfd_settime(timer_fd, 0, &its, nullptr) < 0) {
         ServerLog->Write("[Manager] timerfd_settime", LOGLEVEL_ERROR);
         close(timer_fd);
@@ -950,16 +954,14 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // Opcional: travar em interface específica se configurado
+    // Opcional: travar TCP em interface específica se configurado
     if (mBindAddr.s_addr != 0) {
         const std::string iface = JSON<string>(Configuration["Configuration"]["Bind"], "");
         if (!iface.empty()) {
             if (setsockopt(manager_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
-                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
+                ServerLog->Write("[Manager] setsockopt(SO_BINDTODEVICE) TCP falhou; prosseguindo", LOGLEVEL_WARNING);
             }
-            if (setsockopt(udp_fd, SOL_SOCKET, SO_BINDTODEVICE, iface.c_str(), (socklen_t)iface.size()) < 0) {
-                ServerLog->Write("[Manager] setsockopt(UDP SO_BINDTODEVICE) falhou; prosseguindo com bind por IP", LOGLEVEL_WARNING);
-            }
+            // IMPORTANTE: não aplicar SO_BINDTODEVICE no udp_fd para não perder broadcasts
         }
     }
 
@@ -987,11 +989,11 @@ int Orchestrator::Manage() {
         return 1;
     }
 
-    // Bind UDP (mesma porta do TCP; troque se quiser porta específica de discovery)
+    // Bind UDP (usar SEMPRE INADDR_ANY para receber broadcast)
     sockaddr_in uaddr{};
     uaddr.sin_family = AF_INET;
     uaddr.sin_port   = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
-    uaddr.sin_addr   = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+    uaddr.sin_addr   = in_addr{ htonl(INADDR_ANY) };
 
     if (bind(udp_fd, (sockaddr*)&uaddr, sizeof(uaddr)) < 0) {
         ServerLog->Write("Bind failed - check if UDP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
@@ -1000,6 +1002,13 @@ int Orchestrator::Manage() {
         close(manager_fd);
         close(signal_fd);
         return 1;
+    }
+
+    {
+        char iptcp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &address.sin_addr, iptcp, sizeof(iptcp));
+        ServerLog->Write(String("TCP bound at ") + iptcp + ":" + String(ntohs(address.sin_port)), LOGLEVEL_INFO);
+        char ipudp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &uaddr.sin_addr, ipudp, sizeof(ipudp));
+        ServerLog->Write(String("UDP bound at ") + ipudp + ":" + String(ntohs(uaddr.sin_port)), LOGLEVEL_INFO);
     }
 
     const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
@@ -1018,9 +1027,18 @@ int Orchestrator::Manage() {
         int pr = poll(pfds, 4, -1);
         if (pr < 0) {
             if (errno == EINTR) continue;
-            ServerLog->Write("[Manager] Poll", LOGLEVEL_ERROR);
+            ServerLog->Write("[Manager] poll", LOGLEVEL_ERROR);
             break;
         }
+
+        auto had_err = [&](int i) {
+            if (pfds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {
+                ServerLog->Write(String("[Manager] poll fd ") + String(pfds[i].fd) + " error flags=" + String(pfds[i].revents), LOGLEVEL_WARNING);
+                return true;
+            }
+            return false;
+        };
+        had_err(0); had_err(1); had_err(2); had_err(3);
 
         // sinais
         if (pfds[0].revents & POLLIN) {
@@ -1052,9 +1070,7 @@ int Orchestrator::Manage() {
             }
 
             // delimitação por idle (~1.5s)
-            timeval rcv_to{};
-            rcv_to.tv_sec  = 1;
-            rcv_to.tv_usec = 500000;
+            timeval rcv_to{}; rcv_to.tv_sec = 1; rcv_to.tv_usec = 500000;
             setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_to, sizeof(rcv_to));
 
             std::string incoming;
@@ -1205,13 +1221,46 @@ int Orchestrator::Manage() {
             }
         }
 
-        // ---- NOVO: UDP Discover ----
+        // ---- UDP Discover ----
         if (pfds[3].revents & POLLIN) {
-            // usar recvmsg para obter IP local de chegada
+            // helpers locais para resolver IPv4 da interface
+            auto iface_ipv4 = [](const char* ifname, in_addr& out)->bool {
+                struct ifaddrs* ifaddr = nullptr;
+                if (getifaddrs(&ifaddr) == -1) return false;
+                bool ok = false;
+                for (auto* ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
+                    if (!ifa->ifa_addr) continue;
+                    if (ifa->ifa_addr->sa_family != AF_INET) continue;
+                    if (strcmp(ifa->ifa_name, ifname) != 0) continue;
+                    // Ignora loopback
+                    if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+                    out = ((sockaddr_in*)ifa->ifa_addr)->sin_addr;
+                    ok = true;
+                    break;
+                }
+                freeifaddrs(ifaddr);
+                return ok;
+            };
+
+            auto first_nonloop_ipv4 = [](in_addr& out)->bool {
+                struct ifaddrs* ifaddr = nullptr;
+                if (getifaddrs(&ifaddr) == -1) return false;
+                bool ok = false;
+                for (auto* ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
+                    if (!ifa->ifa_addr) continue;
+                    if (ifa->ifa_addr->sa_family != AF_INET) continue;
+                    if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+                    out = ((sockaddr_in*)ifa->ifa_addr)->sin_addr;
+                    ok = true;
+                    break;
+                }
+                freeifaddrs(ifaddr);
+                return ok;
+            };
+
+            // usar recvmsg para obter a ifindex de chegada
             char inbuf[2048];
-            struct iovec iov{};
-            iov.iov_base = inbuf;
-            iov.iov_len  = sizeof(inbuf);
+            struct iovec iov{}; iov.iov_base = inbuf; iov.iov_len = sizeof(inbuf);
 
             char cmsgbuf[CMSG_SPACE(sizeof(in_pktinfo))];
             struct msghdr msg{};
@@ -1232,22 +1281,54 @@ int Orchestrator::Manage() {
                 try { j = nlohmann::json::parse(payload); ok = true; } catch (...) {}
 
                 if (ok && j.is_object() && j.value("Orchestrator", std::string()) == "Discover") {
-                    in_addr local_ip = (mBindAddr.s_addr != 0) ? mBindAddr : uaddr.sin_addr;
+                    // 1) Tentamos usar a interface do TCP listener (Bind)
+                    in_addr local_ip{}; local_ip.s_addr = 0;
+                    std::string bind_iface = JSON<string>(Configuration["Configuration"]["Bind"], "");
 
-                    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
-                         cmsg != nullptr;
-                         cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-                        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
-                            auto *pi = (in_pktinfo*)CMSG_DATA(cmsg);
-                            local_ip = pi->ipi_addr; // IP local que recebeu o pacote
-                            break;
+                    if (!bind_iface.empty()) {
+                        // SO_BINDTODEVICE no TCP -> responder com o IPv4 dessa iface
+                        if (!iface_ipv4(bind_iface.c_str(), local_ip)) {
+                            // fallback: se não achar IP da iface, usa o que foi bindado no TCP (se específico)
+                            if (address.sin_addr.s_addr != htonl(INADDR_ANY))
+                                local_ip = address.sin_addr;
                         }
+                    }
+
+                    // 2) Se ainda não temos IP, tenta pela ifindex do pacote recebido
+                    if (local_ip.s_addr == 0) {
+                        in_pktinfo* pi = nullptr;
+                        for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
+                            cmsg != nullptr;
+                            cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+                            if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+                                pi = (in_pktinfo*)CMSG_DATA(cmsg);
+                                break;
+                            }
+                        }
+                        if (pi) {
+                            char ifname[IFNAMSIZ] = {0};
+                            if_indextoname(pi->ipi_ifindex, ifname);
+                            if (ifname[0] != '\0') {
+                                (void)iface_ipv4(ifname, local_ip); // se falhar, ainda tentamos fallback abaixo
+                            }
+                        }
+                    }
+
+                    // 3) Fallbacks finais
+                    if (local_ip.s_addr == 0 && mBindAddr.s_addr != 0 && mBindAddr.s_addr != htonl(INADDR_ANY)) {
+                        local_ip = mBindAddr;
+                    }
+                    if (local_ip.s_addr == 0 && address.sin_addr.s_addr != htonl(INADDR_ANY)) {
+                        local_ip = address.sin_addr;
+                    }
+                    if (local_ip.s_addr == 0) {
+                        // último recurso: primeiro IPv4 não-loopback do host
+                        (void)first_nonloop_ipv4(local_ip);
                     }
 
                     nlohmann::json reply = {
                         {"Orchestrator", {
                             {"IP Address", to_ip(local_ip)},
-                            {"Port",       Configuration["Configuration"]["Port"].get<uint16_t>()},
                             {"Server ID",  Configuration["Configuration"]["Server ID"].get<std::string>()}
                         }}
                     };
@@ -1258,9 +1339,15 @@ int Orchestrator::Manage() {
                     } else {
                         ServerLog->Write("UDP Discover replied to " + String(to_ip(peer.sin_addr)), LOGLEVEL_INFO);
                     }
+                } else {
+                    // opcional: log para depuração
+                    // ServerLog->Write("UDP payload ignored: " + String(payload.c_str()), LOGLEVEL_DEBUG);
                 }
+            } else if (r < 0 && errno != EAGAIN && errno != EINTR) {
+                ServerLog->Write("[UDP] recvmsg error", LOGLEVEL_WARNING);
             }
         }
+
     } // while
 
     close(manager_fd);
@@ -1272,7 +1359,6 @@ int Orchestrator::Manage() {
     ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
     return 0;
 }
-
 
 bool Orchestrator::SendToDevice(const std::string& destination, const json& payload) {
     if (payload.empty()) return false;

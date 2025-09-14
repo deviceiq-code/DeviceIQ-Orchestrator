@@ -1,73 +1,5 @@
 {
-    "Components": [
-        {
-            "Address": 14,
-            "Bus": "Onboard",
-            "Class": "Relay",
-            "Enabled": true,
-            "Events": {},
-            "Name": "OL1_Relay",
-            "State": false
-        },
-        {
-            "Address": 27,
-            "Bus": "Onboard",
-            "Class": "Relay",
-            "Enabled": true,
-            "Events": {},
-            "Name": "OL2_Relay",
-            "State": false
-        },
-        {
-            "Address": 26,
-            "Bus": "Onboard",
-            "Class": "Thermometer",
-            "Enabled": true,
-            "Events": {},
-            "Name": "Office",
-            "Type": "DS18B20"
-        },
-        {
-            "Address": 25,
-            "Bus": "Onboard",
-            "Class": "Thermometer",
-            "Enabled": true,
-            "Events": {},
-            "Name": "Rack",
-            "Type": "DS18B20"
-        },
-        {
-            "Address": 32,
-            "Bus": "Onboard",
-            "Class": "Relay",
-            "Enabled": true,
-            "Events": {},
-            "Name": "RK2_Relay",
-            "State": false
-        },
-        {
-            "Address": 12,
-            "Bus": "Onboard",
-            "Class": "Button",
-            "Enabled": true,
-            "Events": {
-                "Changed": "invert(OL1_Relay)"
-            },
-            "Name": "OL1_Button",
-            "Report": "EdgesOnly"
-        },
-        {
-            "Address": 13,
-            "Bus": "Onboard",
-            "Class": "Button",
-            "Enabled": true,
-            "Events": {
-                "Changed": "invert(OL2_Relay)"
-            },
-            "Name": "OL2_Button",
-            "Report": "EdgesOnly"
-        }
-    ],
+    "Components": [],
     "General": {
         "I2C Bus": false,
         "NTP Server": "pool.ntp.org",
@@ -105,7 +37,7 @@
     },
     "Orchestrator": {
         "Assigned": true,
-        "IP Address": "192.168.2.144",
+        "IP Address": "192.168.2.10",
         "Port": 30030,
         "Server ID": "ZCZ95YJJ693UF78"
     },
@@ -129,7 +61,7 @@
         "Auto Reboot": true,
         "Check Interval": 172800000,
         "Debug": false,
-        "Update Manifest": "https://server.dts-network.com:8081/update.json"
+        "Update Manifest": "https://server.dts-network.com:8081/update-home.json"
     },
     "Webhooks": {
         "Enabled": true,
