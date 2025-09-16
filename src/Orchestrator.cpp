@@ -924,10 +924,8 @@ int Orchestrator::Manage() {
     setsockopt(manager_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 
     setsockopt(udp_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-    setsockopt(udp_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one)); // ajuda em restarts rápidos
-    // SO_BROADCAST é necessário para ENVIAR broadcast (não para receber). Deixar setado não atrapalha:
+    setsockopt(udp_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
     setsockopt(udp_fd, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one));
-    // IP_PKTINFO para descobrir IP local que recebeu:
     setsockopt(udp_fd, IPPROTO_IP, IP_PKTINFO, &one, sizeof(one));
 
     // timerfd para status
@@ -941,7 +939,7 @@ int Orchestrator::Manage() {
     }
 
     itimerspec its{};
-    its.it_value.tv_sec    = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
+    its.it_value.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
     its.it_interval.tv_sec = JSON(Configuration["Configuration"]["Status Updater"]["Interval"].get<uint32_t>(), 15);
     its.it_value.tv_nsec = 0;
     its.it_interval.tv_nsec = 0;
@@ -968,8 +966,8 @@ int Orchestrator::Manage() {
     // Bind TCP
     sockaddr_in address{};
     address.sin_family = AF_INET;
-    address.sin_port   = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
-    address.sin_addr   = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
+    address.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
+    address.sin_addr = (mBindAddr.s_addr != 0) ? mBindAddr : in_addr{ htonl(INADDR_ANY) };
 
     if (bind(manager_fd, (sockaddr*)&address, sizeof(address)) < 0) {
         ServerLog->Write("Bind failed - check if TCP port " + String(Configuration["Configuration"]["Port"].get<uint16_t>()) + " is already in use", LOGLEVEL_ERROR);
@@ -1019,10 +1017,10 @@ int Orchestrator::Manage() {
 
     while (running) {
         struct pollfd pfds[4];
-        pfds[0].fd = signal_fd;  pfds[0].events = POLLIN;
+        pfds[0].fd = signal_fd; pfds[0].events = POLLIN;
         pfds[1].fd = manager_fd; pfds[1].events = POLLIN;
-        pfds[2].fd = timer_fd;   pfds[2].events = POLLIN;
-        pfds[3].fd = udp_fd;     pfds[3].events = POLLIN;
+        pfds[2].fd = timer_fd; pfds[2].events = POLLIN;
+        pfds[3].fd = udp_fd; pfds[3].events = POLLIN;
 
         int pr = poll(pfds, 4, -1);
         if (pr < 0) {
@@ -1094,106 +1092,14 @@ int Orchestrator::Manage() {
                 json JsonReply;
                 bool replied = false;
 
-                if (Command == "CheckOnline") {
-                    JsonReply = {
-                        {"Provider", Version.ProductName},
-                        {"Result", "Yes"},
-                        {"Timestamp", CurrentDateTime()}
-                    };
-                    client->OutgoingBuffer(JsonReply);
-                    replied = client->Reply();
-                }
-
-                if (Command == "ReloadConfig") {
-                    ReadConfiguration();
-                    JsonReply = {
-                        {"Provider", Version.ProductName},
-                        {"Result", "Ok"},
-                        {"Timestamp", CurrentDateTime()}
-                    };
-                    client->OutgoingBuffer(JsonReply);
-                    replied = client->Reply();
-                }
-
-                if (Command == "Restart") {
-                    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
-                        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
-                    }
-                }
-
-                if (Command == "Update") {
-                    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
-                        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to update", LOGLEVEL_INFO);
-                    }
-                }
-
-                if (Command == "Discover") {
-                    const json &Parameter = client->IncomingJSON()["Parameter"];
-                    if (Configuration["Managed Devices"].contains(Parameter["MAC Address"])) {
-                        Configuration["Managed Devices"][Parameter["MAC Address"]] = Parameter;
-                        Configuration["Managed Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
-                        Configuration["Managed Devices"][Parameter["MAC Address"]].erase("MAC Address");
-                        Configuration["Managed Devices"][Parameter["MAC Address"]].erase("Server ID");
-                        ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Managed Devices section", LOGLEVEL_INFO);
-                    } else {
-                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]] = Parameter;
-                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]]["Last Update"] = CurrentDateTime();
-                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("MAC Address");
-                        Configuration["Unmanaged Devices"][Parameter["MAC Address"]].erase("Server ID");
-                        ServerLog->Write(Parameter["Hostname"].get<string>() + " information saved on Unmanaged Devices section", LOGLEVEL_INFO);
-                    }
-                    SaveConfiguration();
-
-                    JsonReply = {
-                        {"Provider", Version.ProductName},
-                        {"Result", "Ok"},
-                        {"Timestamp", CurrentDateTime()}
-                    };
-                    client->OutgoingBuffer(JsonReply);
-                    replied = client->Reply();
-                }
-
-                if (Command == "Pull") {
-                    const json &Parameter = client->IncomingJSON()["Parameter"];
-                    if (SaveDeviceConfiguration(Parameter)) {
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", "Ok"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-                        ServerLog->Write("Configuration device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
-                    } else {
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", "Fail"},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-                        ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " configuration", LOGLEVEL_ERROR);
-                    }
-                    client->OutgoingBuffer(JsonReply);
-                    replied = client->Reply();
-                }
-
-                if (Command == "Push") {
-                    const String &Parameter = client->IncomingJSON()["Parameter"].get<String>();
-                    json r = ReadDeviceConfiguration(Parameter);
-                    if (r.empty()) {
-                        ServerLog->Write("Failed reading device " + Parameter + " configuration file", LOGLEVEL_ERROR);
-                    } else {
-                        JsonReply = {
-                            {"Provider", Version.ProductName},
-                            {"Result", r},
-                            {"Timestamp", CurrentDateTime()}
-                        };
-                        client->OutgoingBuffer(JsonReply);
-                        replied = client->Reply();
-                    }
-                }
-
-                if (Command == "GetLog") {
-                    // TODO
-                    replied = true;
-                }
+                if (Command == "CheckOnline") replied = handle_CheckOnline(client);
+                if (Command == "ReloadConfig") replied = handle_ReloadConfig(client);
+                if (Command == "Restart") replied = handle_Restart(client);
+                if (Command == "Update") replied = handle_Update(client);
+                if (Command == "Discover") replied = handle_Discover(client);
+                if (Command == "Pull") replied = handle_Pull(client);
+                if (Command == "Push") replied = handle_Push(client);
+                if (Command == "GetLog") replied = handle_GetLog(client);
 
                 if (replied) {
                     ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
@@ -1687,4 +1593,90 @@ bool Orchestrator::Push(const String &target) {
     ServerLog->Write("[Push] " + it.key() + " - " + ip, LOGLEVEL_INFO);
 
     return SendToDevice(ip, JsonCommand);
+}
+
+
+
+
+
+
+// Private methods
+bool Orchestrator::replyClient(OrchestratorClient* &client, const json &result) {
+    json payload = {{"Provider", Version.ProductName}, {"Result", result}, {"Timestamp", CurrentDateTime()}};
+    client->OutgoingBuffer(payload);
+    return client->Reply();
+}
+
+bool Orchestrator::handle_CheckOnline(OrchestratorClient* &client) {
+    return replyClient(client, "Yes");
+}
+
+bool Orchestrator::handle_ReloadConfig(OrchestratorClient* &client) {
+    ReadConfiguration();
+    return replyClient(client, "Ok");
+}
+
+bool Orchestrator::handle_Restart(OrchestratorClient* &client) {
+    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
+        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
+        return true;
+    }
+    return false;
+}
+
+bool Orchestrator::handle_Update(OrchestratorClient* &client) {
+    if (client->IncomingJSON().value("Parameter", "") == "ACK") {
+        ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to update", LOGLEVEL_INFO);
+        return true;
+    }
+    return false;
+}
+
+bool Orchestrator::handle_Discover(OrchestratorClient*& client) {
+    const json& Parameter = client->IncomingJSON().at("Parameter");
+
+    const std::string mac = Parameter.at("MAC Address").get<std::string>();
+    const std::string hostname = Parameter.value("Hostname", "<unknown>");
+
+    auto& managed   = Configuration["Managed Devices"];
+    auto& unmanaged = Configuration["Unmanaged Devices"];
+
+    const bool isManaged = managed.contains(mac);
+    auto& bucket = isManaged ? managed : unmanaged;
+
+    json rec = Parameter;
+    rec["Last Update"] = CurrentDateTime();
+    rec.erase("MAC Address");
+    rec.erase("Server ID");
+
+    bucket[mac] = std::move(rec);
+
+    ServerLog->Write(hostname + " information saved on " + string(isManaged ? "Managed Devices" : "Unmanaged Devices") + " section", LOGLEVEL_INFO);
+
+    SaveConfiguration();
+    return replyClient(client, "Ok");
+}
+
+bool Orchestrator::handle_Pull(OrchestratorClient*& client) {
+    const json &Parameter = client->IncomingJSON()["Parameter"];
+    if (SaveDeviceConfiguration(Parameter)) {
+        ServerLog->Write("Configuration device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
+        return replyClient(client, "Ok");
+    }
+    ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " configuration", LOGLEVEL_ERROR);
+    return replyClient(client, "Fail");
+}
+
+bool Orchestrator::handle_Push(OrchestratorClient*& client) {
+    const String &Parameter = client->IncomingJSON()["Parameter"].get<String>();
+    json r = ReadDeviceConfiguration(Parameter);
+    if (r.empty()) {
+        ServerLog->Write("Failed reading device " + Parameter + " configuration file", LOGLEVEL_ERROR);
+        return false;
+    }
+    return replyClient(client, r);
+}
+
+bool Orchestrator::handle_GetLog(OrchestratorClient*& client) {
+    // TODO
 }

@@ -124,6 +124,16 @@ struct Device {
 
 class Orchestrator {
     private:
+        bool replyClient(OrchestratorClient* &client, const json &result);
+        bool handle_CheckOnline(OrchestratorClient* &client);
+        bool handle_ReloadConfig(OrchestratorClient* &client);
+        bool handle_Restart(OrchestratorClient* &client);
+        bool handle_Update(OrchestratorClient* &client);
+        bool handle_Discover(OrchestratorClient* &client);
+        bool handle_Pull(OrchestratorClient* &client);
+        bool handle_Push(OrchestratorClient* &client);
+        bool handle_GetLog(OrchestratorClient* &client);
+
         string mServerStartedTimestamp;
 
         in_addr mBindAddr{};

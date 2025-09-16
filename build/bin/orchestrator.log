@@ -1,11 +1,8 @@
-[I][2025-09-14T00:07:17.558087Z] Configuration file: ./orchestrator.json
-[I][2025-09-14T00:07:17.558207Z] Server name: Genesis
-[I][2025-09-14T00:07:17.558244Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-14T00:07:17.558342Z] Service bind to ens3
-[I][2025-09-14T00:07:17.558414Z] [Refresh] 3C:61:05:65:71:94 - 192.168.2.114
-[I][2025-09-14T00:07:17.558530Z] [Refresh] D8:13:2A:7E:EE:C4 - 192.168.2.246
-[I][2025-09-14T00:07:17.558639Z] [Refresh] Multicast finished: Sent = 2, Failed = 0, Ignored = 0
-[I][2025-09-14T00:07:17.701355Z] DEVIQ-DEV information saved on Managed Devices section
-[I][2025-09-14T00:07:17.701776Z] Request [Discover] replied to 192.168.2.114
-[I][2025-09-14T00:07:17.706253Z] DEVIQ-LAB information saved on Managed Devices section
-[I][2025-09-14T00:07:17.706630Z] Request [Discover] replied to 192.168.2.246
+[I][2025-09-16T00:12:59.513234Z] Configuration file: ./orchestrator.json
+[I][2025-09-16T00:12:59.513490Z] Server name: Genesis
+[I][2025-09-16T00:12:59.513592Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-16T00:12:59.513831Z] Service bind to ens3
+[E][2025-09-16T00:21:43.263614Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[E][2025-09-16T00:31:43.263393Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[E][2025-09-16T00:41:43.263403Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[E][2025-09-16T00:51:43.264098Z] Failed to open Orchestrator status update file /var/www/html/status.json
