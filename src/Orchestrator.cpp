@@ -1634,25 +1634,18 @@ bool Orchestrator::handle_Update(OrchestratorClient* &client) {
 
 bool Orchestrator::handle_Discover(OrchestratorClient*& client) {
     const json& Parameter = client->IncomingJSON().at("Parameter");
-
     const std::string mac = Parameter.at("MAC Address").get<std::string>();
     const std::string hostname = Parameter.value("Hostname", "<unknown>");
-
     auto& managed   = Configuration["Managed Devices"];
     auto& unmanaged = Configuration["Unmanaged Devices"];
-
     const bool isManaged = managed.contains(mac);
     auto& bucket = isManaged ? managed : unmanaged;
-
     json rec = Parameter;
     rec["Last Update"] = CurrentDateTime();
     rec.erase("MAC Address");
     rec.erase("Server ID");
-
     bucket[mac] = std::move(rec);
-
     ServerLog->Write(hostname + " information saved on " + string(isManaged ? "Managed Devices" : "Unmanaged Devices") + " section", LOGLEVEL_INFO);
-
     SaveConfiguration();
     return replyClient(client, "Ok");
 }
