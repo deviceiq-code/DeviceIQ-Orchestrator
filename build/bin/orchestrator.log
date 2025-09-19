@@ -1,9 +1,11 @@
-[I][2025-09-16T00:12:59.513234Z] Configuration file: ./orchestrator.json
-[I][2025-09-16T00:12:59.513490Z] Server name: Genesis
-[I][2025-09-16T00:12:59.513592Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-16T00:12:59.513831Z] Service bind to ens3
-[E][2025-09-16T00:21:43.263614Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[E][2025-09-16T00:31:43.263393Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[E][2025-09-16T00:41:43.263403Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[E][2025-09-16T00:51:43.264098Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[E][2025-09-16T01:01:43.263599Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T14:36:43.514334Z] Configuration file: ./orchestrator.json
+[I][2025-09-19T14:36:43.514614Z] Server name: Genesis
+[I][2025-09-19T14:36:43.514721Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-19T14:36:43.514966Z] Service bind to ens3
+[I][2025-09-19T14:36:43.515247Z] TCP bound at 192.168.2.10:30030
+[I][2025-09-19T14:36:43.515397Z] UDP bound at 0.0.0.0:30030
+[I][2025-09-19T14:36:43.515500Z] Orchestrator Manager is running (pid 54956)
+[E][2025-09-19T14:36:43.515684Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T14:36:51.753679Z] SIGINT (Ctrl+C)
+[E][2025-09-19T14:36:51.754323Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T14:36:51.778085Z] Orchestrator Manager finished

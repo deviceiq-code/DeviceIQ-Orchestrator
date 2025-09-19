@@ -10,22 +10,7 @@ void CommandLineParser::OnParameter(const char short_param, const char* long_par
     mParametersCallbacks.push_back(callback);
 }
 
-void CommandLineParser::Parse(int argc, char** argv) {    
-    if (argc == 1) {
-        fprintf(stdout, "Missing parameters.\r\n");
-        exit(1);
-    }
-
-    // Actions
-    uint16_t id = 0;
-    for (const auto& i : mActions) {
-        String tmpAction(i);
-        if (tmpAction.Equals(argv[1])) {
-            mActionsCallbacks[id]();
-        }
-        id++;
-    }
-
+void CommandLineParser::Parse(int argc, char** argv) {
     // Parameters
     std::string shortopts;
 

@@ -9,22 +9,19 @@
 #include <unistd.h>
 #include <thread>
 #include <sys/timerfd.h>
+#include <sys/types.h>
+#include <sys/signalfd.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <random>
 #include <chrono>
 #include <fstream>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <netdb.h>
-#include <unistd.h>
 #include <poll.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <cstring>
 #include <filesystem>
 #include <csignal>
-#include <sys/signalfd.h>
-#include <poll.h>
+
 #include <nlohmann/json.hpp>
 
 #include "String.h"
@@ -163,15 +160,6 @@ class Orchestrator {
 
         inline const string &ServerStartedTimestamp() const { return mServerStartedTimestamp; }
         void UpdateStatus(bool status);
-
-        void List();
-        bool Discovery(const String &target);
-        bool Restart(const String &target);
-        bool Refresh(const String &target);
-        bool Pull(const String &target);
-        bool Push(const String &target);
-        bool Update(const String &target);
-        bool GetLog(const String &target);
 
         OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
         OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
