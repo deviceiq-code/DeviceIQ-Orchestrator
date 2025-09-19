@@ -10,3 +10,4 @@
 [I][2025-09-19T15:02:49.770290Z] Request [Discover] replied to 192.168.2.114
 [I][2025-09-19T15:02:49.836763Z] DEVIQ-LAB information saved on Managed Devices section
 [I][2025-09-19T15:02:49.837112Z] Request [Discover] replied to 192.168.2.246
+[E][2025-09-19T15:12:46.367439Z] Failed to open Orchestrator status update file /var/www/html/status.json
