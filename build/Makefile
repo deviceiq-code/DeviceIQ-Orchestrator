@@ -178,6 +178,30 @@ src/Log.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Log.cpp.s
 .PHONY : src/Log.cpp.s
 
+src/OrchestratorClient.o: src/OrchestratorClient.cpp.o
+.PHONY : src/OrchestratorClient.o
+
+# target to build an object file
+src/OrchestratorClient.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.o
+.PHONY : src/OrchestratorClient.cpp.o
+
+src/OrchestratorClient.i: src/OrchestratorClient.cpp.i
+.PHONY : src/OrchestratorClient.i
+
+# target to preprocess a source file
+src/OrchestratorClient.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.i
+.PHONY : src/OrchestratorClient.cpp.i
+
+src/OrchestratorClient.s: src/OrchestratorClient.cpp.s
+.PHONY : src/OrchestratorClient.s
+
+# target to generate assembly for a file
+src/OrchestratorClient.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.s
+.PHONY : src/OrchestratorClient.cpp.s
+
 src/OrchestratorServer.o: src/OrchestratorServer.cpp.o
 .PHONY : src/OrchestratorServer.o
 
@@ -289,6 +313,9 @@ help:
 	@echo "... src/Log.o"
 	@echo "... src/Log.i"
 	@echo "... src/Log.s"
+	@echo "... src/OrchestratorClient.o"
+	@echo "... src/OrchestratorClient.i"
+	@echo "... src/OrchestratorClient.s"
 	@echo "... src/OrchestratorServer.o"
 	@echo "... src/OrchestratorServer.i"
 	@echo "... src/OrchestratorServer.s"

@@ -21,9 +21,9 @@
 #include <errno.h>
 #include <filesystem>
 #include <csignal>
-
 #include <nlohmann/json.hpp>
 
+#include "../include/OrchestratorClient.h"
 #include "String.h"
 #include "Log.h"
 #include "Tools.h"
@@ -78,31 +78,6 @@ T JSON(const nlohmann::json& jsonValue, const T& defaultValue = T()) {
         return defaultValue;
     }
 }
-
-class OrchestratorClient {
-    private:
-        int mID;
-        sockaddr_in mInfo;
-        string mIncomingBuffer;
-        string mOutgoingBuffer;
-        json mIncomingJSON;
-        json mOutgoingJSON;
-        
-    public:
-        OrchestratorClient(uint32_t id, const sockaddr_in &info) : mID(id), mInfo(info) {}
-
-        bool Reply();
-
-        void IncomingBuffer(const string &value);
-        const string IncomingBuffer() { return mIncomingBuffer; }
-        void OutgoingBuffer(const string &value);
-        void OutgoingBuffer(const json &value);
-        const string OutgoingBuffer() { return mOutgoingBuffer; }
-        const string IPAddress() { return inet_ntoa(mInfo.sin_addr); }
-
-        const json &IncomingJSON() const noexcept { return mIncomingJSON; }
-        const json &OutgoingJSON() const noexcept { return mOutgoingJSON; }
-};
 
 class OrchestratorServer {
     private:

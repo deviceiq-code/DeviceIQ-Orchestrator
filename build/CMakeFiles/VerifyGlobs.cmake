@@ -7,6 +7,7 @@ file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ
 set(OLD_GLOB
   "/home/fernando/Repos/DeviceIQ-Orchestrator/include/CommandLineParser.h"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/include/Log.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorClient.h"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorServer.h"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/include/String.h"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/include/Tools.h"
@@ -31,6 +32,7 @@ file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ
 set(OLD_GLOB
   "/home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp"
   "/home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp"
