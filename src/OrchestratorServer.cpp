@@ -318,7 +318,7 @@ int OrchestratorServer::Manage() {
         return 1;
     }
 
-    // ---- UDP socket para Discover ----
+    // ---- UDP socket for Discover ----
     int udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (udp_fd == -1) {
         ServerLog->Write("[Manager] UDP socket", LOGLEVEL_ERROR);
@@ -409,12 +409,10 @@ int OrchestratorServer::Manage() {
         return 1;
     }
 
-    {
-        char iptcp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &address.sin_addr, iptcp, sizeof(iptcp));
-        ServerLog->Write(String("TCP bound at ") + iptcp + ":" + String(ntohs(address.sin_port)), LOGLEVEL_INFO);
-        char ipudp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &uaddr.sin_addr, ipudp, sizeof(ipudp));
-        ServerLog->Write(String("UDP bound at ") + ipudp + ":" + String(ntohs(uaddr.sin_port)), LOGLEVEL_INFO);
-    }
+    char iptcp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &address.sin_addr, iptcp, sizeof(iptcp));
+    ServerLog->Write(String("TCP bound at ") + iptcp + ":" + String(ntohs(address.sin_port)), LOGLEVEL_INFO);
+    char ipudp[INET_ADDRSTRLEN]; inet_ntop(AF_INET, &uaddr.sin_addr, ipudp, sizeof(ipudp));
+    ServerLog->Write(String("UDP bound at ") + ipudp + ":" + String(ntohs(uaddr.sin_port)), LOGLEVEL_INFO);
 
     const size_t buf_sz = Configuration["Configuration"]["Buffer Size"].get<size_t>();
     ServerLog->Write("Orchestrator Manager is running (pid " + String(getpid()) + ")", LOGLEVEL_INFO);
@@ -445,26 +443,26 @@ int OrchestratorServer::Manage() {
         };
         had_err(0); had_err(1); had_err(2); had_err(3);
 
-        // sinais
+        // Signals
         if (pfds[0].revents & POLLIN) {
             signalfd_siginfo si{};
             ssize_t n = read(signal_fd, &si, sizeof(si));
             if (n == sizeof(si)) {
                 switch (si.ssi_signo) {
-                    case SIGINT:  ServerLog->Write("Orchestrator Server was stopped", LOGLEVEL_INFO); running = false; break;
-                    case SIGTERM: ServerLog->Write("SIGTERM", LOGLEVEL_INFO);         running = false; break;
-                    case SIGHUP:  ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO); readConfiguration(); break;
+                    case SIGINT: ServerLog->Write("Orchestrator Server was stopped", LOGLEVEL_INFO); running = false; break;
+                    case SIGTERM: ServerLog->Write("Orchestrator Server was terminated", LOGLEVEL_INFO); running = false; break;
+                    case SIGHUP: ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO); readConfiguration(); break;
                     case SIGUSR1: ServerLog->Write("SIGUSR1", LOGLEVEL_INFO); break;
                     case SIGUSR2: ServerLog->Write("SIGUSR2", LOGLEVEL_INFO); break;
                     case SIGPIPE: ServerLog->Write("SIGPIPE", LOGLEVEL_INFO); break;
-                    default:      ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO); break;
+                    default: ServerLog->Write("Signal not addressed: " + String(si.ssi_signo), LOGLEVEL_INFO); break;
                 }
             } else {
                 ServerLog->Write("[Manager] read(signalfd) short read", LOGLEVEL_ERROR);
             }
         }
 
-        // conexões TCP
+        // TCP Connections
         if (pfds[1].revents & POLLIN) {
             sockaddr_in client_addr{};
             socklen_t client_len = sizeof(client_addr);
@@ -474,7 +472,6 @@ int OrchestratorServer::Manage() {
                 continue;
             }
 
-            // delimitação por idle (~1.5s)
             timeval rcv_to{}; rcv_to.tv_sec = 1; rcv_to.tv_usec = 500000;
             setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_to, sizeof(rcv_to));
 
@@ -535,7 +532,6 @@ int OrchestratorServer::Manage() {
 
         // ---- UDP Discover ----
         if (pfds[3].revents & POLLIN) {
-            // helpers locais para resolver IPv4 da interface
             auto iface_ipv4 = [](const char* ifname, in_addr& out)->bool {
                 struct ifaddrs* ifaddr = nullptr;
                 if (getifaddrs(&ifaddr) == -1) return false;
@@ -544,7 +540,6 @@ int OrchestratorServer::Manage() {
                     if (!ifa->ifa_addr) continue;
                     if (ifa->ifa_addr->sa_family != AF_INET) continue;
                     if (strcmp(ifa->ifa_name, ifname) != 0) continue;
-                    // Ignora loopback
                     if (ifa->ifa_flags & IFF_LOOPBACK) continue;
                     out = ((sockaddr_in*)ifa->ifa_addr)->sin_addr;
                     ok = true;
@@ -577,11 +572,11 @@ int OrchestratorServer::Manage() {
             char cmsgbuf[CMSG_SPACE(sizeof(in_pktinfo))];
             struct msghdr msg{};
             sockaddr_in peer{};
-            msg.msg_name       = &peer;
-            msg.msg_namelen    = sizeof(peer);
-            msg.msg_iov        = &iov;
-            msg.msg_iovlen     = 1;
-            msg.msg_control    = cmsgbuf;
+            msg.msg_name = &peer;
+            msg.msg_namelen = sizeof(peer);
+            msg.msg_iov = &iov;
+            msg.msg_iovlen = 1;
+            msg.msg_control = cmsgbuf;
             msg.msg_controllen = sizeof(cmsgbuf);
 
             ssize_t r = recvmsg(udp_fd, &msg, 0);
@@ -659,7 +654,6 @@ int OrchestratorServer::Manage() {
                 ServerLog->Write("[UDP] recvmsg error", LOGLEVEL_WARNING);
             }
         }
-
     } // while
 
     close(manager_fd);
@@ -670,44 +664,6 @@ int OrchestratorServer::Manage() {
     UpdateStatus(running);
     ServerLog->Write("Orchestrator Server finished", LOGLEVEL_INFO);
     return 0;
-}
-
-bool OrchestratorServer::SendToDevice(const std::string& destination, const json& payload) {
-    if (payload.empty()) return false;
-    string dumped = payload.dump(-1);
-
-    int socket_fd, broadcast = 1;
-    struct sockaddr_in broadcast_addr;
-
-    socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (socket_fd < 0) return false;
-
-    if (mBindAddr.s_addr == 0) return false;
-    (void)setsockopt(socket_fd, SOL_SOCKET, SO_BINDTODEVICE, Configuration["Configuration"]["Bind"].get<string>().c_str(), (socklen_t)Configuration["Configuration"]["Bind"].get<string>().size());
-
-    sockaddr_in local{};
-    local.sin_family = AF_INET;
-    local.sin_port = htons(0);
-    local.sin_addr = mBindAddr;
-    (void)bind(socket_fd, (sockaddr*)&local, sizeof(local));
-
-    if (setsockopt(socket_fd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) < 0) {
-        close(socket_fd);
-        return false;
-    }
-
-    memset(&broadcast_addr, 0, sizeof(broadcast_addr));
-    broadcast_addr.sin_family = AF_INET;
-    broadcast_addr.sin_addr.s_addr = inet_addr(destination.c_str());
-    broadcast_addr.sin_port = htons(Configuration["Configuration"]["Port"].get<uint16_t>());
-
-    if (sendto(socket_fd, dumped.c_str(), dumped.length(), 0, (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
-        close(socket_fd);
-        return false;
-    }
-
-    close(socket_fd);
-    return true;
 }
 
 const json OrchestratorServer::getDevice(const String &target) {

@@ -25,8 +25,6 @@ string TargetInterface;
 OrchestratorServer *Orchestrator;
 Orchestrator_Log::Log *ServerLog;
 
-OrchestratorAction Action = ACTION_NOACTION;
-
 int main(int argc, char** argv) {
     CommandLineParser clp;
 
