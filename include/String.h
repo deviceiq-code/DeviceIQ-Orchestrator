@@ -12,7 +12,9 @@
 
 class String : public std::string {
     public:
-        String() : std::string() {}
+        using std::string::string;
+
+        String() = default;
         String(int n) : std::string(std::to_string(n)) {}
         String(std::string str) : std::string(str) {}
         String(std::string str, size_t sz);

@@ -1,11 +1,12 @@
-[I][2025-09-19T14:36:43.514334Z] Configuration file: ./orchestrator.json
-[I][2025-09-19T14:36:43.514614Z] Server name: Genesis
-[I][2025-09-19T14:36:43.514721Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-19T14:36:43.514966Z] Service bind to ens3
-[I][2025-09-19T14:36:43.515247Z] TCP bound at 192.168.2.10:30030
-[I][2025-09-19T14:36:43.515397Z] UDP bound at 0.0.0.0:30030
-[I][2025-09-19T14:36:43.515500Z] Orchestrator Manager is running (pid 54956)
-[E][2025-09-19T14:36:43.515684Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[I][2025-09-19T14:36:51.753679Z] SIGINT (Ctrl+C)
-[E][2025-09-19T14:36:51.754323Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[I][2025-09-19T14:36:51.778085Z] Orchestrator Manager finished
+[I][2025-09-19T15:02:46.365961Z] Configuration file: ./orchestrator.json
+[I][2025-09-19T15:02:46.366364Z] Server name: Genesis
+[I][2025-09-19T15:02:46.366519Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-19T15:02:46.366921Z] Service bind to ens3
+[I][2025-09-19T15:02:46.367262Z] TCP bound at 192.168.2.10:30030
+[I][2025-09-19T15:02:46.367435Z] UDP bound at 0.0.0.0:30030
+[I][2025-09-19T15:02:46.367573Z] Orchestrator Manager is running (pid 57074)
+[E][2025-09-19T15:02:46.367842Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T15:02:49.769301Z] DEVIQ-DEV information saved on Managed Devices section
+[I][2025-09-19T15:02:49.770290Z] Request [Discover] replied to 192.168.2.114
+[I][2025-09-19T15:02:49.836763Z] DEVIQ-LAB information saved on Managed Devices section
+[I][2025-09-19T15:02:49.837112Z] Request [Discover] replied to 192.168.2.246

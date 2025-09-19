@@ -43,11 +43,8 @@ constexpr char DEF_BROADCASTADDRESS[] = "255.255.255.255";
 constexpr char DEF_CONFIGFILE[] = "./orchestrator.json";
 constexpr char DEF_LOGFILE[] = "./orchestrator.log";
 constexpr char DEF_SERVERNAME[] = "Orchestrator";
-constexpr bool DEF_FORCE = false;
-constexpr bool DEF_APPLY = false;
 
 enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_RELOADCONFIG, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE, ACTION_GETLOG };
-enum DiscoveryMode { DISCOVERY_NONE, DISCOVERY_ALL, DISCOVERY_UNMANAGED, DISCOVERY_MANAGED };
 
 enum OperationResult {
     NOTMANAGED,
@@ -73,7 +70,7 @@ enum OperationResult {
 template <typename T>
 T JSON(const nlohmann::json& jsonValue, const T& defaultValue = T()) {
     try {
-        if (jsonValue.is_null()) { return defaultValue; }
+        if (jsonValue.is_null()) return defaultValue;
         return jsonValue.get<T>();
     } catch (const nlohmann::json::type_error&) {
         return defaultValue;
@@ -81,14 +78,6 @@ T JSON(const nlohmann::json& jsonValue, const T& defaultValue = T()) {
         return defaultValue;
     }
 }
-
-struct Client {
-    uint16_t ID;
-    sockaddr_in Info;
-    std::string IncomingBuffer;
-    std::string OutgoingBuffer;
-    void Send(char* reply) { OutgoingBuffer = reply; send(ID, OutgoingBuffer.c_str(), OutgoingBuffer.length(), 0); }
-};
 
 class OrchestratorClient {
     private:
@@ -113,10 +102,6 @@ class OrchestratorClient {
 
         const json &IncomingJSON() const noexcept { return mIncomingJSON; }
         const json &OutgoingJSON() const noexcept { return mOutgoingJSON; }
-};
-
-struct Device {
-    uint16_t ID;
 };
 
 class Orchestrator {
@@ -147,9 +132,6 @@ class Orchestrator {
         const json getDevice(const String &target);
 
         void applyBindForUdpSocket(int sockfd);
-        bool sendMessage(const std::string& message, const uint16_t port, const char* dest_address = DEF_BROADCASTADDRESS);
-        void serverListen(const uint16_t port, const uint16_t listen_timeout, std::function<void(Client)> ondata_callback, const size_t bufferSize = DEF_BUFFERSIZE);
-        void serverMultipleListen(uint16_t port, uint16_t timeoutSeconds, std::function<void(Client)> callback, const size_t bufferSize);
 
         void init();
     public:
@@ -160,9 +142,6 @@ class Orchestrator {
 
         inline const string &ServerStartedTimestamp() const { return mServerStartedTimestamp; }
         void UpdateStatus(bool status);
-
-        OperationResult Add(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
-        OperationResult Remove(std::string target, const uint16_t listen_timeout = DEF_LISTENTIMEOUT, const bool force = DEF_FORCE);
 
         int Manage();
         
