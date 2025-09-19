@@ -1,5 +1,5 @@
 CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp \
  /usr/include/stdc-predef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -192,7 +192,7 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/asm-generic/sockios.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
  /usr/include/x86_64-linux-gnu/bits/in.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/json.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/json.hpp \
  /usr/include/c++/13/functional /usr/include/c++/13/bits/std_function.h \
  /usr/include/c++/13/unordered_map \
  /usr/include/c++/13/bits/unordered_map.h \
@@ -239,9 +239,9 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/c++/13/bits/ranges_uninitialized.h \
  /usr/include/c++/13/pstl/glue_memory_defs.h /usr/include/c++/13/utility \
  /usr/include/c++/13/bits/stl_relops.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/adl_serializer.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/abi_macros.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/from_json.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/adl_serializer.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/abi_macros.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/from_json.hpp \
  /usr/include/c++/13/forward_list /usr/include/c++/13/bits/forward_list.h \
  /usr/include/c++/13/bits/forward_list.tcc /usr/include/c++/13/map \
  /usr/include/c++/13/bits/stl_tree.h /usr/include/c++/13/bits/stl_map.h \
@@ -278,25 +278,25 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/c++/13/bits/gslice_array.h \
  /usr/include/c++/13/bits/mask_array.h \
  /usr/include/c++/13/bits/indirect_array.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/exceptions.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/value_t.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/macro_scope.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/detected.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/void_t.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/thirdparty/hedley/hedley.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/exceptions.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/value_t.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/macro_scope.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/detected.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/void_t.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/thirdparty/hedley/hedley.hpp \
  /usr/include/c++/13/version /usr/include/c++/13/cassert \
  /usr/include/assert.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_escape.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/position_t.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/cpp_future.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/type_traits.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iterator_traits.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/call_std/begin.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/call_std/end.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/json_fwd.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_concat.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/identity_tag.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/std_fs.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_escape.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/position_t.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/cpp_future.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/type_traits.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iterator_traits.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/call_std/begin.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/call_std/end.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/json_fwd.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_concat.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/identity_tag.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/std_fs.hpp \
  /usr/include/c++/13/filesystem /usr/include/c++/13/bits/fs_fwd.h \
  /usr/include/c++/13/bits/chrono.h /usr/include/c++/13/ratio \
  /usr/include/c++/13/ctime /usr/include/c++/13/bits/parse_numbers.h \
@@ -311,38 +311,38 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/c++/13/bits/sstream.tcc /usr/include/c++/13/codecvt \
  /usr/include/c++/13/bits/fs_dir.h /usr/include/c++/13/bits/fs_ops.h \
  /usr/include/c++/13/optional \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/to_json.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iteration_proxy.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/to_json.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iteration_proxy.hpp \
  /usr/include/c++/13/ranges /usr/include/c++/13/span \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_utils.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/byte_container_with_subtype.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/hash.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/binary_reader.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/input_adapters.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/string_utils.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/byte_container_with_subtype.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/hash.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/binary_reader.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/input_adapters.hpp \
  /usr/include/c++/13/numeric /usr/include/c++/13/bits/stl_numeric.h \
  /usr/include/c++/13/pstl/glue_numeric_defs.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/json_sax.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/lexer.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/is_sax.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/parser.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/internal_iterator.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/primitive_iterator.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iter_impl.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/json_reverse_iterator.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_custom_base_class.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_pointer.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_ref.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/binary_writer.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/output_adapters.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/serializer.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/to_chars.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/ordered_map.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/json_sax.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/lexer.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/meta/is_sax.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/input/parser.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/internal_iterator.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/primitive_iterator.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/iter_impl.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/iterators/json_reverse_iterator.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_custom_base_class.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_pointer.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/json_ref.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/binary_writer.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/output_adapters.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/output/serializer.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/conversions/to_chars.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/ordered_map.hpp \
  /usr/include/c++/13/any \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/detail/macro_unscope.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include/nlohmann/thirdparty/hedley/hedley_undef.hpp \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/String.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Version.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Log.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/detail/macro_unscope.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/vcpkg_installed/x64-linux/include/nlohmann/thirdparty/hedley/hedley_undef.hpp \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/String.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/Version.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/Log.h \
  /usr/include/syslog.h /usr/include/x86_64-linux-gnu/sys/syslog.h \
  /usr/include/x86_64-linux-gnu/bits/syslog-path.h /usr/include/libgen.h \
  /usr/include/c++/13/bitset /usr/include/c++/13/fstream \
@@ -353,12 +353,12 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/sigevent_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__sigval_t.h \
  /usr/include/x86_64-linux-gnu/bits/netdb.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/./Tools.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/./Tools.h \
  /usr/include/c++/13/chrono /usr/include/c++/13/bits/chrono_io.h \
  /usr/include/c++/13/format /usr/include/c++/13/charconv \
  /usr/include/c++/13/variant \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/./Version.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/OrchestratorServer.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/./Version.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/OrchestratorServer.h \
  /usr/include/net/if.h /usr/include/ifaddrs.h /usr/include/c++/13/thread \
  /usr/include/c++/13/stop_token /usr/include/c++/13/atomic \
  /usr/include/c++/13/bits/std_thread.h /usr/include/c++/13/semaphore \
@@ -400,8 +400,8 @@ CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
  /usr/include/x86_64-linux-gnu/bits/sigthread.h \
  /usr/include/x86_64-linux-gnu/bits/signal_ext.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/../include/OrchestratorClient.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/String.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Log.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/Tools.h \
- /home/fernando/Repos/DeviceIQ-Orchestrator/src/../include/CommandLineParser.h
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/../include/OrchestratorClient.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/String.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/Log.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/Tools.h \
+ /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/../include/CommandLineParser.h

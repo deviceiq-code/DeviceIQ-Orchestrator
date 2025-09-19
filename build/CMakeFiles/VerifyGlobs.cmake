@@ -3,42 +3,42 @@
 cmake_policy(SET CMP0009 NEW)
 
 # PROJECT_HEADERS at CMakeLists.txt:14 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator/include/*.h")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/*.h")
 set(OLD_GLOB
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/CommandLineParser.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/Log.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorClient.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorServer.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/String.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/Tools.h"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/include/Version.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/CommandLineParser.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/Log.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/OrchestratorClient.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/OrchestratorServer.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/String.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/Tools.h"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/Version.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles/cmake.verify_globs")
 endif()
 
 # PROJECT_HEADERS at CMakeLists.txt:14 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator/include/*.hpp")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/include/*.hpp")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles/cmake.verify_globs")
 endif()
 
 # PROJECT_SOURCES at CMakeLists.txt:10 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator/src/*.cpp")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/*.cpp")
 set(OLD_GLOB
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/CommandLineParser.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Log.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorClient.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorServer.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/String.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Tools.cpp"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles/cmake.verify_globs")
 endif()

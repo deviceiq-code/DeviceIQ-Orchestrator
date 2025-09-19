@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/fernando/Repos/DeviceIQ-Orchestrator
+CMAKE_SOURCE_DIR = /home/fernando/Repos/DeviceIQ-Orchestrator-Server
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/fernando/Repos/DeviceIQ-Orchestrator/build
+CMAKE_BINARY_DIR = /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/Orchestrator-Server.dir/depend.make
@@ -70,102 +70,102 @@ include CMakeFiles/Orchestrator-Server.dir/progress.make
 include CMakeFiles/Orchestrator-Server.dir/flags.make
 
 CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp
+CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/CommandLineParser.cpp
 CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/CommandLineParser.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp > CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/CommandLineParser.cpp > CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/CommandLineParser.cpp -o CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/CommandLineParser.cpp -o CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp
+CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Log.cpp
 CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Log.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp > CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Log.cpp > CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp -o CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Log.cpp -o CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp
+CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorClient.cpp
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorClient.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp > CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorClient.cpp > CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorClient.cpp -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorClient.cpp -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp
+CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorServer.cpp
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorServer.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp > CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorServer.cpp > CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/OrchestratorServer.cpp -o CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp
+CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/String.cpp
 CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/String.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/String.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/String.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp > CMakeFiles/Orchestrator-Server.dir/src/String.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/String.cpp > CMakeFiles/Orchestrator-Server.dir/src/String.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/String.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/String.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp -o CMakeFiles/Orchestrator-Server.dir/src/String.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/String.cpp -o CMakeFiles/Orchestrator-Server.dir/src/String.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp
+CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Tools.cpp
 CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Tools.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp > CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Tools.cpp > CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/Tools.cpp -o CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/Tools.cpp -o CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.s
 
 CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: CMakeFiles/Orchestrator-Server.dir/flags.make
-CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp
+CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp
 CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o: CMakeFiles/Orchestrator-Server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o -MF CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o.d -o CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp
 
 CMakeFiles/Orchestrator-Server.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Orchestrator-Server.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp > CMakeFiles/Orchestrator-Server.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp > CMakeFiles/Orchestrator-Server.dir/src/main.cpp.i
 
 CMakeFiles/Orchestrator-Server.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Orchestrator-Server.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/main.cpp -o CMakeFiles/Orchestrator-Server.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator-Server/src/main.cpp -o CMakeFiles/Orchestrator-Server.dir/src/main.cpp.s
 
 # Object files for target Orchestrator-Server
 Orchestrator__Server_OBJECTS = \
@@ -189,7 +189,7 @@ bin/Orchestrator-Server: CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o
 bin/Orchestrator-Server: CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o
 bin/Orchestrator-Server: CMakeFiles/Orchestrator-Server.dir/build.make
 bin/Orchestrator-Server: CMakeFiles/Orchestrator-Server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable bin/Orchestrator-Server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable bin/Orchestrator-Server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Orchestrator-Server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -201,6 +201,6 @@ CMakeFiles/Orchestrator-Server.dir/clean:
 .PHONY : CMakeFiles/Orchestrator-Server.dir/clean
 
 CMakeFiles/Orchestrator-Server.dir/depend:
-	cd /home/fernando/Repos/DeviceIQ-Orchestrator/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/fernando/Repos/DeviceIQ-Orchestrator /home/fernando/Repos/DeviceIQ-Orchestrator /home/fernando/Repos/DeviceIQ-Orchestrator/build /home/fernando/Repos/DeviceIQ-Orchestrator/build /home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles/Orchestrator-Server.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/fernando/Repos/DeviceIQ-Orchestrator-Server /home/fernando/Repos/DeviceIQ-Orchestrator-Server /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build /home/fernando/Repos/DeviceIQ-Orchestrator-Server/build/CMakeFiles/Orchestrator-Server.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/Orchestrator-Server.dir/depend
 
