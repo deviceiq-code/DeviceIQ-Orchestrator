@@ -20,6 +20,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <filesystem>
+#include <system_error>
 #include <csignal>
 #include <nlohmann/json.hpp>
 
@@ -40,8 +41,6 @@ constexpr size_t DEF_BUFFERSIZE = 1024;
 constexpr uint32_t DEF_LISTENTIMEOUT = 5;
 constexpr uint16_t DEF_PORT = 30030;
 constexpr char DEF_BROADCASTADDRESS[] = "255.255.255.255";
-constexpr char DEF_CONFIGFILE[] = "./orchestrator.json";
-constexpr char DEF_LOGFILE[] = "./orchestrator.log";
 constexpr char DEF_SERVERNAME[] = "Orchestrator";
 
 enum OrchestratorAction { ACTION_NOACTION, ACTION_DISCOVERY, ACTION_ADD, ACTION_RESTART, ACTION_RELOADCONFIG, ACTION_REMOVE, ACTION_UPDATE, ACTION_REFRESH, ACTION_LIST, ACTION_PULL, ACTION_PUSH, ACTION_MANAGE, ACTION_CHECKONLINE, ACTION_GETLOG };
@@ -83,7 +82,6 @@ class OrchestratorServer {
     private:
         bool replyClient(OrchestratorClient* &client, const json &result);
         bool handle_CheckOnline(OrchestratorClient* &client);
-        bool handle_ReloadConfig(OrchestratorClient* &client);
         bool handle_Restart(OrchestratorClient* &client);
         bool handle_Update(OrchestratorClient* &client);
         bool handle_Discover(OrchestratorClient* &client);
@@ -97,11 +95,16 @@ class OrchestratorServer {
         bool resolveInterfaceOrIp(const string& ifaceOrIp, in_addr& out);
         bool setBindInterface(const std::string& ifaceOrIp);
 
-        string mConfigFile = DEF_CONFIGFILE;
+        string mConfigFile = "./Orchestrator.json";
+        string mLogFile = "./Orchestrator.log";
+        string mBindInterface = "";
 
-        string generateRandomID();
-        string queryIPAddress(const char* mac_address);
-        string queryMACAddress(const char* ip_address);
+        std::string generateRandomID() { std::string result; const std::string valid_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; std::random_device rd; std::mt19937 generator(rd()); std::uniform_int_distribution<> distribution(0, valid_characters.size() - 1); for (int i = 0; i < 15; ++i) { result += valid_characters[distribution(generator)]; } return result; }
+        std::string queryIPAddress(const char* mac_address);
+        std::string queryMACAddress(const char* ip_address);
+
+        bool readConfiguration();
+        bool saveConfiguration() { ofstream outFile(mConfigFile.c_str()); if (!outFile.is_open()) return false; outFile << Configuration.dump(4); outFile.close(); return !outFile.fail(); }
 
         inline bool isManaged(const String &target) { return Configuration["Managed Devices"].contains(target); }
         const json getDevice(const String &target);
@@ -110,7 +113,8 @@ class OrchestratorServer {
 
         void init();
     public:
-        explicit OrchestratorServer() { init(); }
+        explicit OrchestratorServer(const std::string &configfile) : mConfigFile(configfile) { init(); }
+        explicit OrchestratorServer(const std::string &configfile, const std::string &bindinfertace) : mConfigFile(configfile), mBindInterface(bindinfertace) { init(); }
 
         inline std::string ConfigFile() const { return mConfigFile; }
         inline void ConfigFile(const std::string& value) { mConfigFile = value; }
@@ -122,14 +126,6 @@ class OrchestratorServer {
         
         json Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
         bool SendToDevice(const std::string& destination, const json& payload);
-
-        bool CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port);
-        bool ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port);
-
-        
-        bool Initialize();
-        bool ReadConfiguration();
-        bool SaveConfiguration();
         
         bool SaveDeviceConfiguration(const json &cfg);
         const json ReadDeviceConfiguration(const String &target);

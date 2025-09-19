@@ -19,12 +19,13 @@ class OrchestratorClient {
 
         bool Reply();
 
-        void IncomingBuffer(const std::string &value);
+        inline void IncomingBuffer(const std::string &value) { mIncomingBuffer = value; mIncomingJSON.clear(); try { mIncomingJSON = nlohmann::json::parse(mIncomingBuffer); } catch (...) {} }
         const std::string IncomingBuffer() { return mIncomingBuffer; }
-        void OutgoingBuffer(const std::string &value);
-        void OutgoingBuffer(const nlohmann::json &value);
+        void OutgoingBuffer(const std::string &value) { mOutgoingBuffer = value; mOutgoingJSON.clear(); try { mOutgoingJSON = nlohmann::json::parse(mOutgoingBuffer); } catch (...) {} }
+        void OutgoingBuffer(const nlohmann::json &value) { OutgoingBuffer(value.dump()); }
         const std::string OutgoingBuffer() { return mOutgoingBuffer; }
         const std::string IPAddress() { return inet_ntoa(mInfo.sin_addr); }
+        const std::string MACAddress() { return inet_ntoa(mInfo.sin_addr); }
 
         const nlohmann::json &IncomingJSON() const noexcept { return mIncomingJSON; }
         const nlohmann::json &OutgoingJSON() const noexcept { return mOutgoingJSON; }

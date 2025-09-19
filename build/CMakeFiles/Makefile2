@@ -63,7 +63,7 @@ CMAKE_BINARY_DIR = /home/fernando/Repos/DeviceIQ-Orchestrator/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/orchestrator.dir/all
+all: CMakeFiles/Orchestrator-Server.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/orchestrator.dir/clean
+clean: CMakeFiles/Orchestrator-Server.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/orchestrator.dir
+# Target rules for target CMakeFiles/Orchestrator-Server.dir
 
 # All Build rule for target.
-CMakeFiles/orchestrator.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8 "Built target orchestrator"
-.PHONY : CMakeFiles/orchestrator.dir/all
+CMakeFiles/Orchestrator-Server.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8 "Built target Orchestrator-Server"
+.PHONY : CMakeFiles/Orchestrator-Server.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/orchestrator.dir/rule: cmake_check_build_system
+CMakeFiles/Orchestrator-Server.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles 8
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/orchestrator.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Orchestrator-Server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles 0
-.PHONY : CMakeFiles/orchestrator.dir/rule
+.PHONY : CMakeFiles/Orchestrator-Server.dir/rule
 
 # Convenience name for target.
-orchestrator: CMakeFiles/orchestrator.dir/rule
-.PHONY : orchestrator
+Orchestrator-Server: CMakeFiles/Orchestrator-Server.dir/rule
+.PHONY : Orchestrator-Server
 
 # clean rule for target.
-CMakeFiles/orchestrator.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/clean
-.PHONY : CMakeFiles/orchestrator.dir/clean
+CMakeFiles/Orchestrator-Server.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/clean
+.PHONY : CMakeFiles/Orchestrator-Server.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

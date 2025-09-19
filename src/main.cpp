@@ -18,20 +18,17 @@ using json = nlohmann::json;
 
 using namespace Orchestrator_Log;
 
-OrchestratorServer *ServerOrchestrator;
-Orchestrator_Log::Log *ServerLog;
-
+String ConfigFile = "./Orchestrator.json";
+String LogFile = "./Orchestrator.log";
 string TargetInterface;
+
+OrchestratorServer *Orchestrator;
+Orchestrator_Log::Log *ServerLog;
 
 OrchestratorAction Action = ACTION_NOACTION;
 
 int main(int argc, char** argv) {
     CommandLineParser clp;
-
-    ServerOrchestrator = new OrchestratorServer();
-    ServerLog = new Log(DEF_LOGFILE, ENDPOINT_CONSOLE);
-
-    // Parameters
 
     clp.OnParameter('v', "version", no_argument, [](char* p_arg) {
         fprintf(stdout, "%s %s version %s\r\n\r\n", Version.ProductFamily.c_str(), Version.ProductName.c_str(), Version.Software.Info().c_str());
@@ -40,7 +37,7 @@ int main(int argc, char** argv) {
 
     clp.OnParameter('c', "config", required_argument, [&](char* p_arg) {
         if (p_arg[0] == '=') p_arg = ++p_arg;
-        ServerOrchestrator->ConfigFile(p_arg);
+        ConfigFile = p_arg;
     });
 
     clp.OnParameter('i', "interface", required_argument, [&](char* p_arg) {
@@ -50,30 +47,22 @@ int main(int argc, char** argv) {
 
     clp.Parse(argc, argv);
 
-    if (ServerOrchestrator->ReadConfiguration()) {
-        if (!JSON<bool>(ServerOrchestrator->Configuration["Configuration"]["Log File Append"])) std::remove("./orchestrator.log");
-        ServerLog->Endpoint(JSON<string>(ServerOrchestrator->Configuration["Configuration"]["Log Endpoint"]));
-        ServerLog->SyslogServer(JSON<string>(ServerOrchestrator->Configuration["Configuration"]["Syslog URL"]), JSON<uint16_t>(ServerOrchestrator->Configuration["Configuration"]["Syslog Port"]));
-
-        ServerLog->Write("Configuration file: " + ServerOrchestrator->ConfigFile(), LOGLEVEL_INFO);
-        ServerLog->Write("Server name: " + ServerOrchestrator->Configuration["Configuration"]["Server Name"].get<string>(), LOGLEVEL_INFO);
-        ServerLog->Write("Server ID: " + ServerOrchestrator->Configuration["Configuration"]["Server ID"].get<string>(), LOGLEVEL_INFO);
-
-        if (!TargetInterface.empty()) {
-            ServerOrchestrator->Configuration["Configuration"]["Bind"] = TargetInterface;
-        }
-
-        if (ServerOrchestrator->Initialize()) {
-            ServerLog->Write("Service bind to " + ServerOrchestrator->Configuration["Configuration"]["Bind"].get<string>(), LOGLEVEL_INFO);
-        } else {
-            ServerLog->Write("Service unable to bind to " + ServerOrchestrator->Configuration["Configuration"]["Bind"].get<string>(), LOGLEVEL_ERROR);
-            exit(1);
-        }
-    } else {
-        ServerLog->Write("Configuration file " + ServerOrchestrator->ConfigFile() + " is invalid", LOGLEVEL_ERROR);
+    try {
+        Orchestrator = new OrchestratorServer(ConfigFile, TargetInterface);
+    }
+    catch(const std::exception& e) {
+        fprintf(stderr, "Error: %s\r\n\r\n", e.what());
         exit(1);
     }
 
-    int r = ServerOrchestrator->Manage();
+    ServerLog = new Log(JSON<String>(Orchestrator->Configuration["Configuration"]["Log File"], LogFile), JSON<string>(Orchestrator->Configuration["Configuration"]["Log Endpoint"], "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE"));
+    ServerLog->SyslogServer(JSON<string>(Orchestrator->Configuration["Configuration"]["Syslog URL"], ""), JSON<uint16_t>(Orchestrator->Configuration["Configuration"]["Syslog Port"], 514));
+
+    ServerLog->Write("Configuration file: " + Orchestrator->ConfigFile(), LOGLEVEL_INFO);
+    ServerLog->Write("Server name: " + Orchestrator->Configuration["Configuration"]["Server Name"].get<string>(), LOGLEVEL_INFO);
+    ServerLog->Write("Server ID: " + Orchestrator->Configuration["Configuration"]["Server ID"].get<string>(), LOGLEVEL_INFO);
+    ServerLog->Write("Server Version: " + Version.Software.Info(), LOGLEVEL_INFO);
+
+    int r = Orchestrator->Manage();
     exit(r);
 }

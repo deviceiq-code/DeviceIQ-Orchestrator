@@ -25,49 +25,15 @@ bool OrchestratorClient::Reply() {
                 struct pollfd pfd{ mID, POLLOUT, 0 };
                 int pr = ::poll(&pfd, 1, SEND_TIMEOUT_MS);
                 if (pr > 0) continue;
-                // timeout esperando liberar para enviar
                 return false;
             }
-            // erro definitivo (EPIPE, etc.)
             return false;
         }
     }
 
-    // **Sinaliza EOF na direção de escrita** para o cliente detectar fim da resposta.
     if (::shutdown(mID, SHUT_WR) == -1) {
-        // opcional: log errno (E.g., perror("shutdown"));
         return false;
     }
 
-    // Se você NÃO precisa manter a conexão para mais nada, feche tudo:
-    // ::close(mID);
-    // mID = -1;
-
     return true;
-}
-
-void OrchestratorClient::IncomingBuffer(const std::string &value) {
-    mIncomingBuffer = value;
-    mIncomingJSON.clear();
-
-    try {
-        mIncomingJSON = nlohmann::json::parse(mIncomingBuffer);
-    } catch (...) {
-        
-    }
-}
-
-void OrchestratorClient::OutgoingBuffer(const nlohmann::json &value) {
-    OutgoingBuffer(value.dump());
-}
-
-void OrchestratorClient::OutgoingBuffer(const std::string &value) {
-    mOutgoingBuffer = value;
-    mOutgoingJSON.clear();
-
-    try {
-        mOutgoingJSON = nlohmann::json::parse(mOutgoingBuffer);
-    } catch (...) {
-
-    }
 }

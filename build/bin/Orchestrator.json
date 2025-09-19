@@ -1,0 +1,42 @@
+{
+    "Configuration": {
+        "Bind": "ens3",
+        "Buffer Size": 1024,
+        "Log Endpoint": "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE",
+        "Log File": "./Orchestrator.log",
+        "New Log": true,
+        "Port": 30030,
+        "Server ID": "ZCZ95YJJ693UF78",
+        "Server Name": "Genesis",
+        "Status Updater": {
+            "Enabled": true,
+            "Interval": 600,
+            "Output File": "/var/www/html/status.json"
+        },
+        "Syslog Port": 514,
+        "Syslog URL": "",
+        "Timeout Ms": 15000,
+        "Token": "token_test"
+    },
+    "Managed Devices": {
+        "3C:61:05:65:71:94": {
+            "Hardware Model": "ESP32-WROOM",
+            "Hostname": "DEVIQ-DEV",
+            "IP Address": "192.168.2.114",
+            "Last Update": "2025-09-19T17:26:44.568590Z",
+            "Local Timestamp": "2025-09-19T14:26:43.070538Z",
+            "Product Name": "Home",
+            "Version": "1.0.1"
+        },
+        "D8:13:2A:7E:EE:C4": {
+            "Hardware Model": "ESP32-WROOM",
+            "Hostname": "DEVIQ-LAB",
+            "IP Address": "192.168.2.246",
+            "Last Update": "2025-09-19T17:26:44.814499Z",
+            "Local Timestamp": "2025-09-19T14:26:43.173247Z",
+            "Product Name": "Home",
+            "Version": "1.0.1"
+        }
+    },
+    "Unmanaged Devices": {}
+}

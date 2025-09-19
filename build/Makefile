@@ -118,24 +118,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named orchestrator
+# Target rules for targets named Orchestrator-Server
 
 # Build rule for target.
-orchestrator: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 orchestrator
-.PHONY : orchestrator
+Orchestrator-Server: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Orchestrator-Server
+.PHONY : Orchestrator-Server
 
 # fast build rule for target.
-orchestrator/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/build
-.PHONY : orchestrator/fast
+Orchestrator-Server/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/build
+.PHONY : Orchestrator-Server/fast
 
 src/CommandLineParser.o: src/CommandLineParser.cpp.o
 .PHONY : src/CommandLineParser.o
 
 # target to build an object file
 src/CommandLineParser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/CommandLineParser.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.o
 .PHONY : src/CommandLineParser.cpp.o
 
 src/CommandLineParser.i: src/CommandLineParser.cpp.i
@@ -143,7 +143,7 @@ src/CommandLineParser.i: src/CommandLineParser.cpp.i
 
 # target to preprocess a source file
 src/CommandLineParser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/CommandLineParser.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.i
 .PHONY : src/CommandLineParser.cpp.i
 
 src/CommandLineParser.s: src/CommandLineParser.cpp.s
@@ -151,7 +151,7 @@ src/CommandLineParser.s: src/CommandLineParser.cpp.s
 
 # target to generate assembly for a file
 src/CommandLineParser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/CommandLineParser.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/CommandLineParser.cpp.s
 .PHONY : src/CommandLineParser.cpp.s
 
 src/Log.o: src/Log.cpp.o
@@ -159,7 +159,7 @@ src/Log.o: src/Log.cpp.o
 
 # target to build an object file
 src/Log.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Log.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.o
 .PHONY : src/Log.cpp.o
 
 src/Log.i: src/Log.cpp.i
@@ -167,7 +167,7 @@ src/Log.i: src/Log.cpp.i
 
 # target to preprocess a source file
 src/Log.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Log.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.i
 .PHONY : src/Log.cpp.i
 
 src/Log.s: src/Log.cpp.s
@@ -175,7 +175,7 @@ src/Log.s: src/Log.cpp.s
 
 # target to generate assembly for a file
 src/Log.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Log.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Log.cpp.s
 .PHONY : src/Log.cpp.s
 
 src/OrchestratorClient.o: src/OrchestratorClient.cpp.o
@@ -183,7 +183,7 @@ src/OrchestratorClient.o: src/OrchestratorClient.cpp.o
 
 # target to build an object file
 src/OrchestratorClient.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.o
 .PHONY : src/OrchestratorClient.cpp.o
 
 src/OrchestratorClient.i: src/OrchestratorClient.cpp.i
@@ -191,7 +191,7 @@ src/OrchestratorClient.i: src/OrchestratorClient.cpp.i
 
 # target to preprocess a source file
 src/OrchestratorClient.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.i
 .PHONY : src/OrchestratorClient.cpp.i
 
 src/OrchestratorClient.s: src/OrchestratorClient.cpp.s
@@ -199,7 +199,7 @@ src/OrchestratorClient.s: src/OrchestratorClient.cpp.s
 
 # target to generate assembly for a file
 src/OrchestratorClient.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorClient.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorClient.cpp.s
 .PHONY : src/OrchestratorClient.cpp.s
 
 src/OrchestratorServer.o: src/OrchestratorServer.cpp.o
@@ -207,7 +207,7 @@ src/OrchestratorServer.o: src/OrchestratorServer.cpp.o
 
 # target to build an object file
 src/OrchestratorServer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.o
 .PHONY : src/OrchestratorServer.cpp.o
 
 src/OrchestratorServer.i: src/OrchestratorServer.cpp.i
@@ -215,7 +215,7 @@ src/OrchestratorServer.i: src/OrchestratorServer.cpp.i
 
 # target to preprocess a source file
 src/OrchestratorServer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.i
 .PHONY : src/OrchestratorServer.cpp.i
 
 src/OrchestratorServer.s: src/OrchestratorServer.cpp.s
@@ -223,7 +223,7 @@ src/OrchestratorServer.s: src/OrchestratorServer.cpp.s
 
 # target to generate assembly for a file
 src/OrchestratorServer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/OrchestratorServer.cpp.s
 .PHONY : src/OrchestratorServer.cpp.s
 
 src/String.o: src/String.cpp.o
@@ -231,7 +231,7 @@ src/String.o: src/String.cpp.o
 
 # target to build an object file
 src/String.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/String.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/String.cpp.o
 .PHONY : src/String.cpp.o
 
 src/String.i: src/String.cpp.i
@@ -239,7 +239,7 @@ src/String.i: src/String.cpp.i
 
 # target to preprocess a source file
 src/String.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/String.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/String.cpp.i
 .PHONY : src/String.cpp.i
 
 src/String.s: src/String.cpp.s
@@ -247,7 +247,7 @@ src/String.s: src/String.cpp.s
 
 # target to generate assembly for a file
 src/String.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/String.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/String.cpp.s
 .PHONY : src/String.cpp.s
 
 src/Tools.o: src/Tools.cpp.o
@@ -255,7 +255,7 @@ src/Tools.o: src/Tools.cpp.o
 
 # target to build an object file
 src/Tools.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Tools.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.o
 .PHONY : src/Tools.cpp.o
 
 src/Tools.i: src/Tools.cpp.i
@@ -263,7 +263,7 @@ src/Tools.i: src/Tools.cpp.i
 
 # target to preprocess a source file
 src/Tools.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Tools.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.i
 .PHONY : src/Tools.cpp.i
 
 src/Tools.s: src/Tools.cpp.s
@@ -271,7 +271,7 @@ src/Tools.s: src/Tools.cpp.s
 
 # target to generate assembly for a file
 src/Tools.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Tools.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/Tools.cpp.s
 .PHONY : src/Tools.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -279,7 +279,7 @@ src/main.o: src/main.cpp.o
 
 # target to build an object file
 src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
 src/main.i: src/main.cpp.i
@@ -287,7 +287,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -295,7 +295,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Orchestrator-Server.dir/build.make CMakeFiles/Orchestrator-Server.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 # Help Target
@@ -306,7 +306,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... orchestrator"
+	@echo "... Orchestrator-Server"
 	@echo "... src/CommandLineParser.o"
 	@echo "... src/CommandLineParser.i"
 	@echo "... src/CommandLineParser.s"

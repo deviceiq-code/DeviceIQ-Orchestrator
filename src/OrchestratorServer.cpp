@@ -2,21 +2,23 @@
 
 void OrchestratorServer::init() {
     mServerStartedTimestamp = CurrentDateTime();
-}
+    if (readConfiguration()) {
+        mLogFile = JSON<String>(Configuration["Configuration"]["Log File"], mLogFile);
+        if (JSON<bool>(Configuration["Configuration"]["New Log"], false)) std::remove(mLogFile.c_str());
+        
+        String bind_if;
+        if (mBindInterface.empty()) {
+            bind_if = JSON<String>(Configuration["Configuration"]["Bind"], "");
+        } else {
+            bind_if = mBindInterface;
+        }
 
-std::string OrchestratorServer::generateRandomID() {
-    std::string result;
-
-    const std::string valid_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_int_distribution<> distribution(0, valid_characters.size() - 1);
-
-    for (int i = 0; i < 15; ++i) {
-        result += valid_characters[distribution(generator)];
+        if (!setBindInterface(bind_if)) {
+            throw std::runtime_error("Failed to bind to interface " + bind_if);
+        }
+    } else {    
+        throw std::runtime_error("Failed to read configuration file " + mConfigFile);
     }
-    
-    return result;
 }
 
 std::string OrchestratorServer::queryIPAddress(const char* mac_address) {
@@ -54,89 +56,45 @@ void OrchestratorServer::applyBindForUdpSocket(int sockfd) {
     (void)bind(sockfd, (sockaddr*)&local, sizeof(local));
 }
 
-bool OrchestratorServer::Initialize() {
+bool OrchestratorServer::readConfiguration() {
     bool ret = false;
-
-    if (Configuration.empty()) {
-        if (ReadConfiguration()) {
-            if (JSON<std::string>(Configuration["Configuration"]["Server Name"], "") == "") Configuration["Configuration"]["Server Name"] = DEF_SERVERNAME;
-            if (JSON<std::string>(Configuration["Configuration"]["Server ID"], "") == "") Configuration["Configuration"]["Server ID"] = generateRandomID();
-        }
-    }
-
-    // Bind
-    if (setBindInterface(JSON<std::string>(Configuration["Configuration"]["Bind"], ""))) {
-        ret = true;
-    } else {
-        ret = false;
-    }
-
-    return ret;
-}
-
-bool OrchestratorServer::ReadConfiguration() {
-    bool ret = false;
-
-    if (mConfigFile.empty()) {
-        char exePath[PATH_MAX];
-
-        ssize_t count = readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
-        if (count != -1) {
-            exePath[count] = '\0';
-            mConfigFile = "./" + Version.ProductName + ".json";
-        } else {
-            mConfigFile = DEF_CONFIGFILE;
-        }
-    }
 
     std::ifstream configFile(mConfigFile);
 
-    if (configFile.is_open() == true) {
+    if (configFile.is_open()) {
         try {
             configFile >> Configuration;
             ret = true;
         } catch (nlohmann::json::parse_error& ex) {
-            // ServerLog->Write("Parse error at byte " + to_string(ex.byte) + ":" + ex.what() + " on file " + mConfigFile, LOGLEVEL_ERROR);
+            throw "Parse error at byte " + to_string(ex.byte) + ":" + ex.what() + " on file " + mConfigFile;
             ret = false;
         }
     } else {
         Configuration["Configuration"] = {
-            {"Log Endpoint", "ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE"},
-            {"Log File Append", false},
             {"Bind", ""},
-            {"Port", 30030},
-            {"Timeout Ms", 15000},
             {"Buffer Size", 1024},
-            {"Server ID", ""},
-            {"Server Name", ""},
+            {"Log Endpoint", "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE"},
+            {"Log File", "./Orchestrator.log"},
+            {"New Log", true},
+            {"Port", 30030},
+            {"Server ID", generateRandomID()},
+            {"Server Name", DEF_SERVERNAME},
             {"Syslog Port", 514},
-            {"Syslog URL", ""}
-        };
-
-        Configuration["Managed Devices"] = {
+            {"Syslog URL", ""},
+            {"Timeout Ms", 15000},
+            {"Token", DEF_SERVERNAME},
         };
         
-        if (SaveConfiguration()) {
-            // ServerLog->Write("Configuration file not found - Default config file " + string(DEF_CONFIGFILE) + " created", LOGLEVEL_WARNING);
-            ret = true;
-        } else {
-            // ServerLog->Write("Configuration file not found - Unable to create default config file " + string(DEF_CONFIGFILE), LOGLEVEL_ERROR);
-            ret = false;
-        }
+        Configuration["Configuration"]["Status Updater"] = {
+            {"Enabled", false},
+            {"Interval", 60000},
+            {"Output File", "/var/www/html/status.json"}
+        };
+        
+        return saveConfiguration();
     }
 
     return ret;
-}
-
-bool OrchestratorServer::SaveConfiguration() {
-    ofstream outFile(mConfigFile.c_str());
-
-    if (!outFile.is_open()) return false;
-
-    outFile << Configuration.dump(4);
-    outFile.close();
-
-    return !outFile.fail();
 }
 
 bool OrchestratorServer::SaveDeviceConfiguration(const json &config) {
@@ -316,54 +274,12 @@ void OrchestratorServer::UpdateStatus(bool status) {
     };
 
     ofstream outFile(JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json").c_str());
-    if (!outFile.is_open()) {
-        ServerLog->Write("Failed to open Orchestrator status update file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json"), LOGLEVEL_ERROR);
-    };
+    if (!outFile.is_open()) ServerLog->Write("Failed to open Orchestrator status update file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json"), LOGLEVEL_ERROR);
 
     outFile << JsonStatusUpdater.dump(4);
     outFile.close();
 
-    if (!outFile.fail()) {
-        ServerLog->Write("Orchestrator status file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json") + " updated", LOGLEVEL_INFO);
-    }
-}
-
-bool OrchestratorServer::CheckOnline(const std::string& orchestrator_url, uint16_t orchestrator_port) {
-    json JsonQuery;
-    JsonQuery = {
-        {"Provider", "Orchestrator"},
-        {"Command", "CheckOnline"},
-        {"Parameter", ""}
-    };
-
-    json JsonReply = Query(orchestrator_url, orchestrator_port, JsonQuery);
-    bool rst = false;
-
-    if (!JsonReply.empty()) {
-        if (JsonReply.contains("Provider")) {
-            rst = (JsonReply.value("Result", "") == "Yes" ? true : false);
-        }
-    }
-    return rst;
-}
-
-bool OrchestratorServer::ReloadConfig(const std::string& orchestrator_url, uint16_t orchestrator_port) {
-    json JsonQuery;
-    JsonQuery = {
-        {"Provider", "Orchestrator"},
-        {"Command", "ReloadConfig"},
-        {"Parameter", ""}
-    };
-
-    json JsonReply = Query(orchestrator_url, orchestrator_port, JsonQuery);
-    bool rst = false;
-
-    if (!JsonReply.empty()) {
-        if (JsonReply.contains("Provider")) {
-            rst = (JsonReply.value("Result", "") == "Ok" ? true : false);
-        }
-    }
-    return rst;
+    if (!outFile.fail()) ServerLog->Write("Orchestrator status file " + JSON<string>(Configuration["Configuration"]["Status Updater"]["Output File"], "./status.json") + " updated", LOGLEVEL_INFO);
 }
 
 // Helper: converte in_addr -> string
@@ -535,9 +451,9 @@ int OrchestratorServer::Manage() {
             ssize_t n = read(signal_fd, &si, sizeof(si));
             if (n == sizeof(si)) {
                 switch (si.ssi_signo) {
-                    case SIGINT:  ServerLog->Write("SIGINT (Ctrl+C)", LOGLEVEL_INFO); running = false; break;
+                    case SIGINT:  ServerLog->Write("Orchestrator Server was stopped", LOGLEVEL_INFO); running = false; break;
                     case SIGTERM: ServerLog->Write("SIGTERM", LOGLEVEL_INFO);         running = false; break;
-                    case SIGHUP:  ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO); ReadConfiguration(); break;
+                    case SIGHUP:  ServerLog->Write("Reload configuration file " + mConfigFile, LOGLEVEL_INFO); readConfiguration(); break;
                     case SIGUSR1: ServerLog->Write("SIGUSR1", LOGLEVEL_INFO); break;
                     case SIGUSR2: ServerLog->Write("SIGUSR2", LOGLEVEL_INFO); break;
                     case SIGPIPE: ServerLog->Write("SIGPIPE", LOGLEVEL_INFO); break;
@@ -584,7 +500,6 @@ int OrchestratorServer::Manage() {
                 bool replied = false;
 
                 if (Command == "CheckOnline") replied = handle_CheckOnline(client);
-                if (Command == "ReloadConfig") replied = handle_ReloadConfig(client);
                 if (Command == "Restart") replied = handle_Restart(client);
                 if (Command == "Update") replied = handle_Update(client);
                 if (Command == "Discover") replied = handle_Discover(client);
@@ -753,7 +668,7 @@ int OrchestratorServer::Manage() {
     close(udp_fd);
 
     UpdateStatus(running);
-    ServerLog->Write("Orchestrator Manager finished", LOGLEVEL_INFO);
+    ServerLog->Write("Orchestrator Server finished", LOGLEVEL_INFO);
     return 0;
 }
 
@@ -853,11 +768,6 @@ bool OrchestratorServer::handle_CheckOnline(OrchestratorClient* &client) {
     return replyClient(client, "Yes");
 }
 
-bool OrchestratorServer::handle_ReloadConfig(OrchestratorClient* &client) {
-    ReadConfiguration();
-    return replyClient(client, "Ok");
-}
-
 bool OrchestratorServer::handle_Restart(OrchestratorClient* &client) {
     if (client->IncomingJSON().value("Parameter", "") == "ACK") {
         ServerLog->Write("Device [" + client->IncomingJSON().value("Hostname", "") + "] sent ACK to restart", LOGLEVEL_INFO);
@@ -888,7 +798,7 @@ bool OrchestratorServer::handle_Discover(OrchestratorClient*& client) {
     rec.erase("Server ID");
     bucket[mac] = std::move(rec);
     ServerLog->Write(hostname + " information saved on " + string(isManaged ? "Managed Devices" : "Unmanaged Devices") + " section", LOGLEVEL_INFO);
-    SaveConfiguration();
+    saveConfiguration();
     return replyClient(client, "Ok");
 }
 
