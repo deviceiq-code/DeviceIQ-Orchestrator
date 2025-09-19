@@ -119,8 +119,7 @@
 			"path" : "build/vcpkg_installed/x64-linux/share/nlohmann_json/nlohmann_jsonTargets.cmake"
 		},
 		{
-			"isExternal" : true,
-			"path" : "/home/fernando/Repos/DeviceIQ-Orchestrator/vcpkg.json"
+			"path" : "vcpkg.json"
 		}
 	],
 	"kind" : "cmakeFiles",

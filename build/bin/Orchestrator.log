@@ -1,11 +1,11 @@
-[I][2025-09-19T19:01:21.396626Z] Configuration file: ./Orchestrator.json
-[I][2025-09-19T19:01:21.396906Z] Server name: Genesis
-[I][2025-09-19T19:01:21.397032Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-19T19:01:21.397178Z] Server Version: 1.0.0
-[I][2025-09-19T19:01:21.397392Z] TCP bound at 192.168.2.10:30030
-[I][2025-09-19T19:01:21.397527Z] UDP bound at 0.0.0.0:30030
-[I][2025-09-19T19:01:21.397634Z] Orchestrator Manager is running (pid 67447)
-[E][2025-09-19T19:01:21.397795Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[I][2025-09-19T19:01:26.860879Z] Orchestrator Server was stopped
-[E][2025-09-19T19:01:26.861446Z] Failed to open Orchestrator status update file /var/www/html/status.json
-[I][2025-09-19T19:01:26.861687Z] Orchestrator Server finished
+[I][2025-09-19T19:07:47.280045Z] Configuration file: ./Orchestrator.json
+[I][2025-09-19T19:07:47.280189Z] Server name: Genesis
+[I][2025-09-19T19:07:47.280232Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-19T19:07:47.280263Z] Server Version: 1.0.0
+[I][2025-09-19T19:07:47.280364Z] TCP bound at 192.168.2.10:30030
+[I][2025-09-19T19:07:47.280423Z] UDP bound at 0.0.0.0:30030
+[I][2025-09-19T19:07:47.280473Z] Orchestrator Manager is running (pid 68753)
+[E][2025-09-19T19:07:47.280567Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T19:07:53.885171Z] Orchestrator Server was stopped
+[E][2025-09-19T19:07:53.885709Z] Failed to open Orchestrator status update file /var/www/html/status.json
+[I][2025-09-19T19:07:53.885946Z] Orchestrator Server finished

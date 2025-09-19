@@ -1199,7 +1199,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "/home/fernando/Repos/DeviceIQ-Orchestrator"
+			"value" : "/home/fernando/Repos/DeviceIQ-Orchestrator-Server"
 		},
 		{
 			"name" : "VCPKG_MANIFEST_INSTALL",

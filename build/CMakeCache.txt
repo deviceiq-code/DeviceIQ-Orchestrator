@@ -231,7 +231,7 @@ VCPKG_INSTALLED_DIR:PATH=/home/fernando/Repos/DeviceIQ-Orchestrator-Server/build
 VCPKG_INSTALL_OPTIONS:STRING=
 
 //The path to the vcpkg manifest directory.
-VCPKG_MANIFEST_DIR:PATH=/home/fernando/Repos/DeviceIQ-Orchestrator
+VCPKG_MANIFEST_DIR:PATH=/home/fernando/Repos/DeviceIQ-Orchestrator-Server
 
 //Install the dependencies listed in your manifest:
 //\n    If this is off, you will have to manually install your dependencies.

@@ -15,7 +15,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "vcpkg_installed/x64-linux/share/nlohmann_json/nlohmann_jsonConfig.cmake"
   "vcpkg_installed/x64-linux/share/nlohmann_json/nlohmann_jsonConfigVersion.cmake"
   "vcpkg_installed/x64-linux/share/nlohmann_json/nlohmann_jsonTargets.cmake"
-  "/home/fernando/Repos/DeviceIQ-Orchestrator/vcpkg.json"
+  "/home/fernando/Repos/DeviceIQ-Orchestrator-Server/vcpkg.json"
   "/home/fernando/vcpkg/scripts/buildsystems/vcpkg.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.28/Modules/CMakeCommonLanguageInclude.cmake"
