@@ -97,19 +97,19 @@ CMakeFiles/orchestrator.dir/src/Log.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/orchestrator.dir/src/Log.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/Log.cpp -o CMakeFiles/orchestrator.dir/src/Log.cpp.s
 
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: CMakeFiles/orchestrator.dir/flags.make
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: CMakeFiles/orchestrator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o -MF CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o.d -o CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o: CMakeFiles/orchestrator.dir/flags.make
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o: CMakeFiles/orchestrator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/fernando/Repos/DeviceIQ-Orchestrator/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o -MF CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o.d -o CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp
 
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp > CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.i
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp > CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.i
 
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp -o CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.s
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp -o CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.s
 
 CMakeFiles/orchestrator.dir/src/String.cpp.o: CMakeFiles/orchestrator.dir/flags.make
 CMakeFiles/orchestrator.dir/src/String.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/String.cpp
@@ -157,7 +157,7 @@ CMakeFiles/orchestrator.dir/src/main.cpp.s: cmake_force
 orchestrator_OBJECTS = \
 "CMakeFiles/orchestrator.dir/src/CommandLineParser.cpp.o" \
 "CMakeFiles/orchestrator.dir/src/Log.cpp.o" \
-"CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o" \
+"CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o" \
 "CMakeFiles/orchestrator.dir/src/String.cpp.o" \
 "CMakeFiles/orchestrator.dir/src/Tools.cpp.o" \
 "CMakeFiles/orchestrator.dir/src/main.cpp.o"
@@ -167,7 +167,7 @@ orchestrator_EXTERNAL_OBJECTS =
 
 bin/orchestrator: CMakeFiles/orchestrator.dir/src/CommandLineParser.cpp.o
 bin/orchestrator: CMakeFiles/orchestrator.dir/src/Log.cpp.o
-bin/orchestrator: CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o
+bin/orchestrator: CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o
 bin/orchestrator: CMakeFiles/orchestrator.dir/src/String.cpp.o
 bin/orchestrator: CMakeFiles/orchestrator.dir/src/Tools.cpp.o
 bin/orchestrator: CMakeFiles/orchestrator.dir/src/main.cpp.o

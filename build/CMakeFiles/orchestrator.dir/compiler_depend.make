@@ -675,7 +675,7 @@ CMakeFiles/orchestrator.dir/src/Log.cpp.o: /home/fernando/Repos/DeviceIQ-Orchest
   /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h \
   /usr/lib/gcc/x86_64-linux-gnu/13/include/syslimits.h
 
-CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp \
+CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o: /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp \
   vcpkg_installed/x64-linux/include/nlohmann/adl_serializer.hpp \
   vcpkg_installed/x64-linux/include/nlohmann/byte_container_with_subtype.hpp \
   vcpkg_installed/x64-linux/include/nlohmann/detail/abi_macros.hpp \
@@ -725,7 +725,7 @@ CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o: /home/fernando/Repos/DeviceI
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Tools.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Version.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Log.h \
-  /home/fernando/Repos/DeviceIQ-Orchestrator/include/Orchestrator.h \
+  /home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorServer.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/String.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Tools.h \
   /usr/include/alloca.h \
@@ -1843,7 +1843,7 @@ CMakeFiles/orchestrator.dir/src/main.cpp.o: /home/fernando/Repos/DeviceIQ-Orches
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Version.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/CommandLineParser.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Log.h \
-  /home/fernando/Repos/DeviceIQ-Orchestrator/include/Orchestrator.h \
+  /home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorServer.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/String.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Tools.h \
   /home/fernando/Repos/DeviceIQ-Orchestrator/include/Version.h \
@@ -2345,9 +2345,7 @@ CMakeFiles/orchestrator.dir/src/main.cpp.o: /home/fernando/Repos/DeviceIQ-Orches
 
 /usr/include/c++/13/atomic:
 
-/home/fernando/Repos/DeviceIQ-Orchestrator/include/Orchestrator.h:
-
-/home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp:
+/home/fernando/Repos/DeviceIQ-Orchestrator/include/OrchestratorServer.h:
 
 /usr/include/x86_64-linux-gnu/sys/syslog.h:
 
@@ -2392,6 +2390,8 @@ CMakeFiles/orchestrator.dir/src/main.cpp.o: /home/fernando/Repos/DeviceIQ-Orches
 /usr/include/rpc/netdb.h:
 
 /usr/include/netinet/in.h:
+
+/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp:
 
 /usr/include/netdb.h:
 

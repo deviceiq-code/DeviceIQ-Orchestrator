@@ -178,29 +178,29 @@ src/Log.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Log.cpp.s
 .PHONY : src/Log.cpp.s
 
-src/Orchestrator.o: src/Orchestrator.cpp.o
-.PHONY : src/Orchestrator.o
+src/OrchestratorServer.o: src/OrchestratorServer.cpp.o
+.PHONY : src/OrchestratorServer.o
 
 # target to build an object file
-src/Orchestrator.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o
-.PHONY : src/Orchestrator.cpp.o
+src/OrchestratorServer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o
+.PHONY : src/OrchestratorServer.cpp.o
 
-src/Orchestrator.i: src/Orchestrator.cpp.i
-.PHONY : src/Orchestrator.i
+src/OrchestratorServer.i: src/OrchestratorServer.cpp.i
+.PHONY : src/OrchestratorServer.i
 
 # target to preprocess a source file
-src/Orchestrator.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.i
-.PHONY : src/Orchestrator.cpp.i
+src/OrchestratorServer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.i
+.PHONY : src/OrchestratorServer.cpp.i
 
-src/Orchestrator.s: src/Orchestrator.cpp.s
-.PHONY : src/Orchestrator.s
+src/OrchestratorServer.s: src/OrchestratorServer.cpp.s
+.PHONY : src/OrchestratorServer.s
 
 # target to generate assembly for a file
-src/Orchestrator.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.s
-.PHONY : src/Orchestrator.cpp.s
+src/OrchestratorServer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/orchestrator.dir/build.make CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.s
+.PHONY : src/OrchestratorServer.cpp.s
 
 src/String.o: src/String.cpp.o
 .PHONY : src/String.o
@@ -289,9 +289,9 @@ help:
 	@echo "... src/Log.o"
 	@echo "... src/Log.i"
 	@echo "... src/Log.s"
-	@echo "... src/Orchestrator.o"
-	@echo "... src/Orchestrator.i"
-	@echo "... src/Orchestrator.s"
+	@echo "... src/OrchestratorServer.o"
+	@echo "... src/OrchestratorServer.i"
+	@echo "... src/OrchestratorServer.s"
 	@echo "... src/String.o"
 	@echo "... src/String.i"
 	@echo "... src/String.s"

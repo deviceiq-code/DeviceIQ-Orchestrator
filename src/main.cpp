@@ -10,7 +10,7 @@
 #include "../include/String.h"
 #include "../include/Version.h"
 #include "../include/Log.h"
-#include "../include/Orchestrator.h"
+#include "../include/OrchestratorServer.h"
 #include "../include/CommandLineParser.h"
 
 using namespace std;
@@ -18,7 +18,7 @@ using json = nlohmann::json;
 
 using namespace Orchestrator_Log;
 
-Orchestrator *ServerOrchestrator;
+OrchestratorServer *ServerOrchestrator;
 Orchestrator_Log::Log *ServerLog;
 
 string TargetInterface;
@@ -28,7 +28,7 @@ OrchestratorAction Action = ACTION_NOACTION;
 int main(int argc, char** argv) {
     CommandLineParser clp;
 
-    ServerOrchestrator = new Orchestrator();
+    ServerOrchestrator = new OrchestratorServer();
     ServerLog = new Log(DEF_LOGFILE, ENDPOINT_CONSOLE);
 
     // Parameters

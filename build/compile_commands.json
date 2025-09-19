@@ -13,9 +13,9 @@
 },
 {
   "directory": "/home/fernando/Repos/DeviceIQ-Orchestrator/build",
-  "command": "/usr/bin/c++  -I/home/fernando/Repos/DeviceIQ-Orchestrator/include -isystem /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include -g -std=c++20 -o CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp",
-  "file": "/home/fernando/Repos/DeviceIQ-Orchestrator/src/Orchestrator.cpp",
-  "output": "CMakeFiles/orchestrator.dir/src/Orchestrator.cpp.o"
+  "command": "/usr/bin/c++  -I/home/fernando/Repos/DeviceIQ-Orchestrator/include -isystem /home/fernando/Repos/DeviceIQ-Orchestrator/build/vcpkg_installed/x64-linux/include -g -std=c++20 -o CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o -c /home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp",
+  "file": "/home/fernando/Repos/DeviceIQ-Orchestrator/src/OrchestratorServer.cpp",
+  "output": "CMakeFiles/orchestrator.dir/src/OrchestratorServer.cpp.o"
 },
 {
   "directory": "/home/fernando/Repos/DeviceIQ-Orchestrator/build",
