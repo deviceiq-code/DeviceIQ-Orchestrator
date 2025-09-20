@@ -491,7 +491,7 @@ int OrchestratorServer::Manage() {
             client->IncomingBuffer(incoming);
 
             // Debug - print whatever arrives
-            std::cout << "\r\n---\r\n" << incoming << "\r\n---\r\n" << std::endl;
+            // std::cout << "\r\n---\r\n" << incoming << "\r\n---\r\n" << std::endl;
             // 
 
             if ((!client->IncomingJSON().empty()) && (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.Provider)) {

@@ -7,3 +7,6 @@
 [I][2025-09-20T10:57:54.460294Z] Orchestrator Manager is running (pid 95381)
 [I][2025-09-20T10:57:54.460528Z] Orchestrator status file /var/www/html/status.json updated
 [E][2025-09-20T10:57:58.787558Z] Invalid Protocol [{"Provider":"Orchestrator","Command":"GetLog","Parameter":{"Filename":"/syslog.log","Size":66512,"Encoding":"base64","Checksum":"B6735BBE","Data":"]
+[I][2025-09-20T10:58:43.271809Z] Orchestrator Server was stopped
+[I][2025-09-20T10:58:43.272488Z] Orchestrator status file /var/www/html/status.json updated
+[I][2025-09-20T10:58:43.272650Z] Orchestrator Server finished
