@@ -1,8 +1,9 @@
-[I][2025-09-20T00:49:27.244222Z] Configuration file: ./Orchestrator.json
-[I][2025-09-20T00:49:27.244500Z] Server name: Genesis
-[I][2025-09-20T00:49:27.244615Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-20T00:49:27.244704Z] Server Version: 1.0.0
-[I][2025-09-20T00:49:27.244880Z] TCP bound at 192.168.2.10:30030
-[I][2025-09-20T00:49:27.245000Z] UDP bound at 0.0.0.0:30030
-[I][2025-09-20T00:49:27.245142Z] Orchestrator Manager is running (pid 88606)
-[I][2025-09-20T00:49:27.245596Z] Orchestrator status file /var/www/html/status.json updated
+[I][2025-09-20T10:57:54.459511Z] Configuration file: ./Orchestrator.json
+[I][2025-09-20T10:57:54.459875Z] Server name: Genesis
+[I][2025-09-20T10:57:54.460008Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-20T10:57:54.460067Z] Server Version: 1.0.0
+[I][2025-09-20T10:57:54.460179Z] TCP bound at 192.168.2.10:30030
+[I][2025-09-20T10:57:54.460234Z] UDP bound at 0.0.0.0:30030
+[I][2025-09-20T10:57:54.460294Z] Orchestrator Manager is running (pid 95381)
+[I][2025-09-20T10:57:54.460528Z] Orchestrator status file /var/www/html/status.json updated
+[E][2025-09-20T10:57:58.787558Z] Invalid Protocol [{"Provider":"Orchestrator","Command":"GetLog","Parameter":{"Filename":"/syslog.log","Size":66512,"Encoding":"base64","Checksum":"B6735BBE","Data":"]

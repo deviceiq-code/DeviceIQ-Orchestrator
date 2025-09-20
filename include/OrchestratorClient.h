@@ -19,7 +19,7 @@ class OrchestratorClient {
 
         bool Reply();
 
-        inline void IncomingBuffer(const std::string &value) { mIncomingBuffer = value; mIncomingJSON.clear(); try { mIncomingJSON = nlohmann::json::parse(mIncomingBuffer); } catch (...) {} }
+        inline void IncomingBuffer(const std::string &value) { mIncomingBuffer = value; mIncomingJSON.clear(); try { mIncomingJSON = nlohmann::json::parse(mIncomingBuffer); } catch (...) { mIncomingJSON.clear(); } }
         const std::string IncomingBuffer() { return mIncomingBuffer; }
         void OutgoingBuffer(const std::string &value) { mOutgoingBuffer = value; mOutgoingJSON.clear(); try { mOutgoingJSON = nlohmann::json::parse(mOutgoingBuffer); } catch (...) {} }
         void OutgoingBuffer(const nlohmann::json &value) { OutgoingBuffer(value.dump()); }

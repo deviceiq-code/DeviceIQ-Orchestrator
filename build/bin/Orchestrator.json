@@ -23,8 +23,8 @@
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-DEV",
             "IP Address": "192.168.2.114",
-            "Last Update": "2025-09-20T00:02:51.247169Z",
-            "Local Timestamp": "2025-09-19T21:02:50.898844Z",
+            "Last Update": "2025-09-20T10:51:48.550108Z",
+            "Local Timestamp": "2025-09-20T07:51:46.304246Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         },
@@ -32,8 +32,8 @@
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-LAB",
             "IP Address": "192.168.2.246",
-            "Last Update": "2025-09-20T00:36:45.192948Z",
-            "Local Timestamp": "2025-09-19T21:36:44.232871Z",
+            "Last Update": "2025-09-20T10:52:13.990536Z",
+            "Local Timestamp": "2025-09-20T07:52:13.788444Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         }

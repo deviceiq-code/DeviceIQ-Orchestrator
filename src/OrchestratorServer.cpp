@@ -490,9 +490,11 @@ int OrchestratorServer::Manage() {
             OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
             client->IncomingBuffer(incoming);
 
-            std::cout << incoming << std::endl;
+            // Debug - print whatever arrives
+            std::cout << "\r\n---\r\n" << incoming << "\r\n---\r\n" << std::endl;
+            // 
 
-            if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.Provider) {
+            if ((!client->IncomingJSON().empty()) && (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.Provider)) {
                 const string &Command = JSON<string>(client->IncomingJSON().value("Command", ""));
 
                 json JsonReply;
@@ -783,19 +785,19 @@ bool OrchestratorServer::handle_Push(OrchestratorClient*& client) {
 bool OrchestratorServer::handle_GetLog(OrchestratorClient*& client) {
     const json &Parameter = client->IncomingJSON()["Parameter"];
 
-    std::cout << Parameter.dump(4) << std::endl;
-
-    // if (SaveDeviceLog(Parameter)) {
-    //     ServerLog->Write("Log device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
-    //     return replyClient(client, "Ok");
-    // }
-    // ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " log", LOGLEVEL_ERROR);
-    // return replyClient(client, "Fail");
+    if (SaveDeviceLog(Parameter)) {
+        ServerLog->Write("Log device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
+        return replyClient(client, "Ok");
+    }
+    ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " log", LOGLEVEL_ERROR);
+    return replyClient(client, "Fail");
 
     return replyClient(client, "Ok");
 }
 
 bool OrchestratorServer::SaveDeviceLog(const json &payload) {
+    std::cout << payload.dump(4) << std::endl;
+
     // std::string mac = config["Network"]["MAC Address"].get<std::string>();
     // mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
 

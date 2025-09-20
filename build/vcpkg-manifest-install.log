@@ -1,4 +1,3 @@
-waiting to take filesystem lock on /home/fernando/vcpkg/.vcpkg-root...
 Detecting compiler hash for triplet x64-linux...
 Compiler found: /usr/bin/c++
 The following packages are already installed:
@@ -18,4 +17,4 @@ For more information, see the docs here:
     
     https://json.nlohmann.me/api/macros/json_use_implicit_conversions/
 
-All requested installations completed successfully in: 117 us
+All requested installations completed successfully in: 105 us
