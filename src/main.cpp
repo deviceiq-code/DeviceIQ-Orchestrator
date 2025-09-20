@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Error: %s\r\n\r\n", e.what());
         exit(1);
     }
-
+    
     ServerLog = new Log(JSON<String>(Orchestrator->Configuration["Configuration"]["Log File"], LogFile), JSON<string>(Orchestrator->Configuration["Configuration"]["Log Endpoint"], "ENDPOINT_CONSOLE, ENDPOINT_FILE, ENDPOINT_SYSLOG_LOCAL, ENDPOINT_SYSLOG_REMOTE"));
     ServerLog->SyslogServer(JSON<string>(Orchestrator->Configuration["Configuration"]["Syslog URL"], ""), JSON<uint16_t>(Orchestrator->Configuration["Configuration"]["Syslog Port"], 514));
 
@@ -49,6 +49,5 @@ int main(int argc, char** argv) {
     ServerLog->Write("Server ID: " + Orchestrator->Configuration["Configuration"]["Server ID"].get<string>(), LOGLEVEL_INFO);
     ServerLog->Write("Server Version: " + Version.Software.Info(), LOGLEVEL_INFO);
 
-    int r = Orchestrator->Manage();
-    exit(r);
+    exit(Orchestrator->Manage());
 }

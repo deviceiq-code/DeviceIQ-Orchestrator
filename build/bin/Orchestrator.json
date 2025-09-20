@@ -10,12 +10,12 @@
         "Server Name": "Genesis",
         "Status Updater": {
             "Enabled": true,
-            "Interval": 600,
+            "Interval": 15000,
             "Output File": "/var/www/html/status.json"
         },
         "Syslog Port": 514,
         "Syslog URL": "",
-        "Timeout Ms": 15000,
+        "Timeout": 15,
         "Token": "token_test"
     },
     "Managed Devices": {
@@ -23,8 +23,8 @@
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-DEV",
             "IP Address": "192.168.2.114",
-            "Last Update": "2025-09-19T17:26:44.568590Z",
-            "Local Timestamp": "2025-09-19T14:26:43.070538Z",
+            "Last Update": "2025-09-20T00:02:51.247169Z",
+            "Local Timestamp": "2025-09-19T21:02:50.898844Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         },
@@ -32,8 +32,8 @@
             "Hardware Model": "ESP32-WROOM",
             "Hostname": "DEVIQ-LAB",
             "IP Address": "192.168.2.246",
-            "Last Update": "2025-09-19T17:26:44.814499Z",
-            "Local Timestamp": "2025-09-19T14:26:43.173247Z",
+            "Last Update": "2025-09-20T00:36:45.192948Z",
+            "Local Timestamp": "2025-09-19T21:36:44.232871Z",
             "Product Name": "Home",
             "Version": "1.0.1"
         }

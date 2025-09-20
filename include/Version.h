@@ -7,7 +7,8 @@ using namespace std;
 
 static struct version {
     const string ProductFamily = "DeviceIQ";
-    const string ProductName = "Orchestrator";
+    const string ProductName = "Orchestrator Server";
+    const string Provider = "Orchestrator";
     struct software {
         const uint8_t Major = 1;
         const uint8_t Minor = 0;

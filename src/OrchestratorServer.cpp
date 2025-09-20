@@ -81,7 +81,7 @@ bool OrchestratorServer::readConfiguration() {
             {"Server Name", DEF_SERVERNAME},
             {"Syslog Port", 514},
             {"Syslog URL", ""},
-            {"Timeout Ms", 15000},
+            {"Timeout", 15},
             {"Token", DEF_SERVERNAME},
         };
         
@@ -490,7 +490,9 @@ int OrchestratorServer::Manage() {
             OrchestratorClient *client = new OrchestratorClient(client_fd, client_addr);
             client->IncomingBuffer(incoming);
 
-            if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.ProductName) {
+            std::cout << incoming << std::endl;
+
+            if (JSON<string>(client->IncomingJSON().value("Provider", "")) == Version.Provider) {
                 const string &Command = JSON<string>(client->IncomingJSON().value("Command", ""));
 
                 json JsonReply;
@@ -505,7 +507,7 @@ int OrchestratorServer::Manage() {
                 if (Command == "GetLog") replied = handle_GetLog(client);
 
                 if (replied) {
-                    ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
+                    // ServerLog->Write("Request [" + Command + "] replied to " + client->IPAddress(), LOGLEVEL_INFO);
                 } else {
                     ::shutdown(client_fd, SHUT_WR);
                 }
@@ -779,6 +781,35 @@ bool OrchestratorServer::handle_Push(OrchestratorClient*& client) {
 }
 
 bool OrchestratorServer::handle_GetLog(OrchestratorClient*& client) {
-    // TODO
-    return false;
+    const json &Parameter = client->IncomingJSON()["Parameter"];
+
+    std::cout << Parameter.dump(4) << std::endl;
+
+    // if (SaveDeviceLog(Parameter)) {
+    //     ServerLog->Write("Log device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
+    //     return replyClient(client, "Ok");
+    // }
+    // ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " log", LOGLEVEL_ERROR);
+    // return replyClient(client, "Fail");
+
+    return replyClient(client, "Ok");
+}
+
+bool OrchestratorServer::SaveDeviceLog(const json &payload) {
+    // std::string mac = config["Network"]["MAC Address"].get<std::string>();
+    // mac.erase(std::remove(mac.begin(), mac.end(), ':'), mac.end());
+
+    // std::string config_file = "./log/" + mac + ".log";
+
+    // filesystem::create_directories("./log");
+
+    // std::ofstream outFile(config_file);
+    // if (!outFile.is_open()) return false;
+
+    // outFile << config.dump(4);
+    // outFile.close();
+
+    // return !outFile.fail();
+
+    return true;
 }

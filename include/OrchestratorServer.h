@@ -95,6 +95,7 @@ class OrchestratorServer {
         
         json Query(const std::string& orchestrator_url, uint16_t orchestrator_port, const json& payload);
         
+        bool SaveDeviceLog(const json &payload);
         bool SaveDeviceConfiguration(const json &cfg);
         const json ReadDeviceConfiguration(const String &target);
 
