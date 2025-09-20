@@ -1,12 +1,11 @@
-[I][2025-09-20T10:57:54.459511Z] Configuration file: ./Orchestrator.json
-[I][2025-09-20T10:57:54.459875Z] Server name: Genesis
-[I][2025-09-20T10:57:54.460008Z] Server ID: ZCZ95YJJ693UF78
-[I][2025-09-20T10:57:54.460067Z] Server Version: 1.0.0
-[I][2025-09-20T10:57:54.460179Z] TCP bound at 192.168.2.10:30030
-[I][2025-09-20T10:57:54.460234Z] UDP bound at 0.0.0.0:30030
-[I][2025-09-20T10:57:54.460294Z] Orchestrator Manager is running (pid 95381)
-[I][2025-09-20T10:57:54.460528Z] Orchestrator status file /var/www/html/status.json updated
-[E][2025-09-20T10:57:58.787558Z] Invalid Protocol [{"Provider":"Orchestrator","Command":"GetLog","Parameter":{"Filename":"/syslog.log","Size":66512,"Encoding":"base64","Checksum":"B6735BBE","Data":"]
-[I][2025-09-20T10:58:43.271809Z] Orchestrator Server was stopped
-[I][2025-09-20T10:58:43.272488Z] Orchestrator status file /var/www/html/status.json updated
-[I][2025-09-20T10:58:43.272650Z] Orchestrator Server finished
+[I][2025-09-20T11:49:18.734880Z] Configuration file: ./Orchestrator.json
+[I][2025-09-20T11:49:18.735333Z] Server name: Genesis
+[I][2025-09-20T11:49:18.735499Z] Server ID: ZCZ95YJJ693UF78
+[I][2025-09-20T11:49:18.735631Z] Server Version: 1.0.0
+[I][2025-09-20T11:49:18.735911Z] TCP bound at 192.168.2.10:30030
+[I][2025-09-20T11:49:18.736125Z] UDP bound at 0.0.0.0:30030
+[I][2025-09-20T11:49:18.736281Z] Orchestrator Manager is running (pid 99899)
+[I][2025-09-20T11:49:18.736820Z] Orchestrator status file /var/www/html/status.json updated
+[I][2025-09-20T11:50:00.960052Z] UDP Discover replied to 192.168.2.246
+[I][2025-09-20T11:50:01.282109Z] DEVIQ-LAB information saved on Managed Devices section
+[I][2025-09-20T11:50:05.695979Z] Log device D8:13:2A:7E:EE:C4 saved successfully

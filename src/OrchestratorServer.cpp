@@ -437,7 +437,7 @@ int OrchestratorServer::Manage() {
         auto had_err = [&](int i) {
             if (pfds[i].revents & (POLLERR | POLLHUP | POLLNVAL)) {
                 ServerLog->Write(String("[Manager] poll fd ") + String(pfds[i].fd) + " error flags=" + String(pfds[i].revents), LOGLEVEL_WARNING);
-                return true;
+                return true;    
             }
             return false;
         };
@@ -786,13 +786,11 @@ bool OrchestratorServer::handle_GetLog(OrchestratorClient*& client) {
     const json &Parameter = client->IncomingJSON()["Parameter"];
 
     if (SaveDeviceLog(Parameter)) {
-        ServerLog->Write("Log device " + Parameter["Network"]["Hostname"].get<String>() + " saved successfully", LOGLEVEL_INFO);
+        ServerLog->Write("Log device " + Parameter["MAC Address"].get<String>() + " saved successfully", LOGLEVEL_INFO);
         return replyClient(client, "Ok");
     }
-    ServerLog->Write("Failed saving device " + Parameter["Network"]["Hostname"].get<String>() + " log", LOGLEVEL_ERROR);
+    ServerLog->Write("Failed saving device " + Parameter["Hostname"].get<String>() + " log", LOGLEVEL_ERROR);
     return replyClient(client, "Fail");
-
-    return replyClient(client, "Ok");
 }
 
 bool OrchestratorServer::SaveDeviceLog(const json &payload) {
